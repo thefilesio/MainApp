@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chat Widget</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script type="module">
+      import('/embed/chat-embed.js').then(({ initWidget }) => {
+        const params = new URLSearchParams(window.location.search);
+        const widgetId = params.get('widgetId');
+        if (widgetId) initWidget(widgetId);
+      });
+    </script>
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chat-root"></div>
+  </body>
+</html>

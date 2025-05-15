@@ -1,0 +1,14 @@
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional: Custom global styles */
+body {
+  @apply bg-background text-foreground;
+  font-family: 'Inter', sans-serif;
+}
