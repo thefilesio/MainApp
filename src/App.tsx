@@ -16,7 +16,7 @@ import Support from "./pages/shared/Support";
 import NotFound from "./pages/shared/NotFound";
 import Auth from "./pages/shared/Auth";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/dashboard";
 
 const queryClient = new QueryClient();
 
