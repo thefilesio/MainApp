@@ -1,0 +1,76 @@
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em rgba(58, 158, 145, 0.6));
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em rgba(58, 158, 145, 0.6));
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #5d6e74;
+}
+
+/* TheFiles.io specific styling */
+button {
+  @apply rounded-xl transition-all;
+}
+
+button:hover {
+  @apply shadow-md;
+}
+
+input:focus, textarea:focus, select:focus {
+  @apply ring-2 ring-chatbot-accent;
+}
+
+.button-primary {
+  @apply bg-chatbot-accent text-white hover:bg-chatbot-hover transition;
+}
+
+.button-secondary {
+  @apply bg-transparent border border-chatbot-accent text-chatbot-accent hover:bg-chatbot-accent-light dark:hover:bg-chatbot-accent-dark transition;
+}
+
+.card-thefiles {
+  @apply bg-white dark:bg-chatbot-darker rounded-xl shadow-md border border-border;
+}
+
+@layer base {
+  input {
+    @apply text-black dark:text-white;
+  }
+}

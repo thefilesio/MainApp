@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 43 54% 98%;
+    --foreground: 184 24% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 184 24% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 184 24% 15%;
+
+    --primary: 172 48% 42%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 30 25% 97%;
+    --secondary-foreground: 184 24% 15%;
+
+    --muted: 30 25% 97%;
+    --muted-foreground: 189 13% 41%;
+
+    --accent: 172 48% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 16% 90%;
+    --input: 30 16% 90%;
+    --ring: 172 48% 42%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 229 20% 9%;
+    --foreground: 0 0% 89%;
+
+    --card: 229 20% 9%;
+    --card-foreground: 0 0% 89%;
+
+    --popover: 229 20% 9%;
+    --popover-foreground: 0 0% 89%;
+
+    --primary: 172 48% 42%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 0 0% 89%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 188 14% 66%;
+
+    --accent: 172 48% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 172 48% 42%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground transition-colors duration-300 ease-in-out;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  .light {
+    --chatbot-light-bg: #fdfbf5;
+    --chatbot-text-primary: #1b2a2e;
+    --chatbot-card-bg: #ffffff;
+    --chatbot-input-button: #3a9e91;
+  }
+}
+
+
+
+
+/* Custom styles for the application */
+@layer components {
+  .chatbot-container {
+    @apply flex min-h-screen w-full bg-background text-foreground transition-colors duration-300;
+  }
+  
+  .chatbot-sidebar {
+    @apply h-screen w-64 bg-card border-r border-border flex flex-col transition-colors duration-300;
+  }
+  
+  .chatbot-main {
+    @apply flex-1 overflow-auto;
+  }
+
+  .chatbot-sidebar-item {
+    @apply flex items-center space-x-3 px-4 py-3 rounded-md transition-colors;
+    color: theme('colors.chatbot.text-dark');
+    background-color: transparent;
+  }
+  .dark .chatbot-sidebar-item {
+    color: #e4e4e4;
+    background-color: transparent;
+  }
+  .chatbot-sidebar-item:hover {
+    background-color: theme('colors.chatbot.accent');
+    color: #fff;
+  }
+  .dark .chatbot-sidebar-item:hover {
+    background-color: #32867d;
+    color: #fff;
+  }
+  .chatbot-sidebar-item.active {
+    background-color: theme('colors.chatbot.accent');
+    color: #fff;
+    font-weight: 600;
+  }
+  .dark .chatbot-sidebar-item.active {
+    background-color: #3a9e91;
+    color: #fff;
+    font-weight: 600;
+  }
+  
+  .chatbot-card {
+    @apply bg-card border border-border rounded-xl shadow-md hover:shadow-lg transition-shadow;
+  }
+  
+  .chatbot-heading {
+    @apply text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground;
+  }
+  
+  .chatbot-subheading {
+    @apply text-xl sm:text-2xl font-semibold text-foreground;
+  }
+  
+  /* Light mode specific styles */
+  .light .chat-background {
+    @apply bg-chatbot-light-bg;
+  }
+  
+  .light .chat-card {
+    @apply bg-white;
+  }
+  
+  .light .chat-text {
+    @apply text-chatbot-text-primary;
+  }
+}

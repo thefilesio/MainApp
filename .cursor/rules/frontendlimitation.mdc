@@ -1,0 +1,23 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+{
+  "rule": "Warn when editing files outside of frontend scope",
+  "description": "This project has a split between frontend (User A) and backend (User B). Warn if I (User A) accidentally edit backend or server-related files.",
+  "when": "editing",
+  "if": {
+    "filepath": [
+      "/apps/api/*",
+      "/supabase/functions/*",
+      "/utils/server/*",
+      "**/*.env",
+      "**/vercel.json",
+      "**/vite.config.ts",
+      "**/next.config.js"
+    ]
+  },
+  "message": "⚠️ Achtung! Du bearbeitest gerade eine Datei, die außerhalb deines Frontend-Bereichs liegt. Bitte lass diese Datei vom Backend-Partner bearbeiten."
+}
+
