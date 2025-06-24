@@ -21,6 +21,7 @@ import {
     Rocket,
     Smartphone,
     ChevronDown,
+    Plus,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useBots } from "@/hooks/useBots";
@@ -43,12 +44,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useApiKeyContext } from "@/contexts/ApiKeyContext";
 import { toast as toastLib } from "sonner";
 import ChatInterface from "@/components/ChatInterface";
+import { useWidgets } from "@/hooks/useWidgets";
 
 const LaunchAgent = () => {
     const { toast } = useToast();
     const { bots } = useBots();
     const { translations } = useLanguage();
     const { user } = useAuth();
+    const [loading, setLoading] = useState(false);
 
     const [isIntegrationTypeModalOpen, setIsIntegrationTypeModalOpen] =
         useState(false);
@@ -126,6 +129,28 @@ const LaunchAgent = () => {
         }
         setIsIntegrationTypeModalOpen(true);
     };
+    const { fetchWidgets } = useWidgets();
+    useEffect(() => {
+        setLoading(true);
+        fetchWidgets()
+            .then((fetchedWidgets) => {
+                setConnections(
+                    fetchedWidgets.map((widget) => ({
+                        id: widget.id,
+                        name: widget.title,
+                        integrationType: "website",
+                        buildId: widget.bot_id,
+                        enabled: true,
+                    }))
+                );
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching widgets:", error);
+                setConnections([]);
+                setLoading(false);
+            });
+    }, []);
 
     const handleIntegrationSelect = (type: string) => {
         setSelectedIntegration(type);
@@ -266,21 +291,34 @@ const LaunchAgent = () => {
     }
 
     return (
-        <div>
-           
-            <h1 className="chatbot-heading mb-8">
-                {translations.launchAgent.title}
-            </h1>
+        <div className="dark:bg-dark min-h-screen px-4 py-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-10">
+                <div>
+                    <h1 className="text-3xl font-extrabold text-[#2AB6A6] mb-1">
+                        Launch Agent
+                    </h1>
+                    <p className="text-gray-500 dark:text-gray-300 mt-2 text-base">
+                        Deploy your AI chatbot agent to various platforms.
+                    </p>
+                </div>
+                <Button
+                    onClick={handleCreateConnection}
+                    className="gap-2 self-start rounded-xl shadow-md px-6 py-3 text-base font-bold bg-[#2AB6A6] hover:bg-[#229b8e] transition-all"
+                    size="lg"
+                >
+                    <Plus className="h-5 w-5" /> Create Connection
+                </Button>
+            </div>
 
             {/* Connection List */}
             {connections.length > 0 && (
-                <div className="mb-8">
+                <div className="mb-8 text-black dark:text-white">
                     <h2 className="text-lg font-semibold mb-4">Connections</h2>
                     <div className="space-y-4">
                         {connections.map((conn, idx) => (
                             <div
                                 key={conn.id}
-                                className="flex items-center justify-between bg-card p-4 rounded shadow"
+                                className="flex items-center justify-between bg-card p-4 rounded shadow dark:bg-main-dark border dark:border-[#22304a] "
                             >
                                 <div>
                                     <div className="font-medium">
@@ -322,27 +360,37 @@ const LaunchAgent = () => {
                 </div>
             )}
 
-            <div className="flex flex-col items-center justify-center py-16">
-                <div className="text-center max-w-md mb-8">
-                    <div className="mx-auto w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mb-4">
-                        <Rocket className="h-8 w-8 text-accent" />
+            {connections.length === 0 && !loading && (
+                <div className="flex flex-col items-center justify-center py-16 text-black dark:text-white">
+                    <div className="text-center max-w-md mb-8">
+                        <div className="mx-auto w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mb-4">
+                            <Rocket className="h-8 w-8 text-accent" />
+                        </div>
+                        <h2 className="text-2xl font-bold mb-2">
+                            {translations.launchAgent.readyToLaunch}
+                        </h2>
+                        <p className="text-muted-foreground mb-6">
+                            {translations.launchAgent.readyToLaunchSubtitle}
+                        </p>
                     </div>
-                    <h2 className="text-2xl font-bold mb-2">
-                        {translations.launchAgent.readyToLaunch}
-                    </h2>
-                    <p className="text-muted-foreground mb-6">
-                        {translations.launchAgent.readyToLaunchSubtitle}
+
+                    <Button
+                        size="lg"
+                        onClick={handleCreateConnection}
+                        className="gap-2 px-8"
+                    >
+                        {translations.launchAgent.createConnection}
+                    </Button>
+                </div>
+            )}
+
+            {loading && (
+                <div className="flex items-center justify-center h-64 w-full">
+                    <p className="text-lg text-gray-500">
+                        Loading connections...
                     </p>
                 </div>
-
-                <Button
-                    size="lg"
-                    onClick={handleCreateConnection}
-                    className="gap-2 px-8"
-                >
-                    {translations.launchAgent.createConnection}
-                </Button>
-            </div>
+            )}
 
             {/* Integration Type Modal */}
             <Dialog

@@ -1,48 +1,25 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import ChatInterface from "@/components/ChatInterface";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Toggle } from "@/components/ui/toggle";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from "@/components/ui/dialog";
-import { Copy, Moon, Sun, Check } from "lucide-react";
-import { useBots } from "@/hooks/useBots";
+import { CardContent } from "@/components/ui/card";
+import ChatInterfaceUser from "@/components/ChatInterfaceUser";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
-import { usePrompts } from "@/hooks/usePrompts";
 import { useLoading } from "@/contexts/LoadingContext";
-import { useRouter } from "next/router";
-import withAuth from "@/hooks/use-auth";
+import { useWidgets } from "@/hooks/useWidgets";
 interface Message {
     id: string;
     content: string;
     sender: "user" | "bot";
     timestamp: Date;
 }
-const DemoLive = () => {
-    const router = useRouter();
-    const { botId, demoName, welcomeMessage, avatarUrl, logoUrl, themeColor } =
-        router.query; // get botId from URL
-    // get query parameter domoName from URL
-
-    const { bots, isLoading: isBotsLoading } = useBots();
+const Widget = () => {
     const { setLoading } = useLoading();
+    const [loading, setLoadingState] = useState(true);
 
     const [selectedBot, setSelectedBot] = useState("");
+    const [demoName, setDemoName] = useState<string | null>(null);
+    const [themeColor, setThemeColor] = useState<string | null>(null);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
+    const [titleChat, setTitleChat] = useState<string | null>("Chat Interface");
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "welcome-message",
@@ -52,67 +29,43 @@ const DemoLive = () => {
         },
     ]);
     const [isDarkMode, setIsDarkMode] = useState(true);
-    const [openChat, setOpenChat] = useState(false);
-    const [position, setPosition] = useState("bottom-right");
     const [promptText, setPromptText] = useState("");
-
-    const bubbleSize = 50; // Size of the chat bubble
-    const width = 400;
-    const height = 600; // Height of the chat interface
-    const bg = isDarkMode ? "#1a1a1a" : "#ffffff"; // Background color
-    const fg = isDarkMode ? "#ffffff" : "#000000"; // Foreground color
-    const { prompts } = usePrompts(selectedBot);
+    const [prompts, setPrompts] = useState<any[]>([]);// Height of the chat interface
+    const { findWidgetById } = useWidgets();
 
     useEffect(() => {
         setLoading(true);
-        console.log("Demo Name from URL:", demoName);
-        setSelectedBot((botId as string) || "");
-
-        if (isBotsLoading) return; // ⛔️ Jangan lakukan apa pun saat masih loading
-
-        if (bots.length === 0) {
-            setSelectedBot("");
-            toast.error("No bots available. Please create a bot first.");
-        } else if (!bots.some((bot) => bot.id === selectedBot)) {
-            setSelectedBot(bots[0].id);
-        }
-
-        loadPromptContent();
-        setLoading(false);
-    }, [
-        bots,
-        isBotsLoading,
-        demoName,
-        welcomeMessage,
-        avatarUrl,
-        logoUrl,
-        selectedBot,
-    ]);
-
-    //  useEffect(() => {
-    //     setParamId(params?.botId || null);
-    //     if (paramId) {
-    //         setSelectedBot(paramId);
-    //     } else if (bots.length > 0) {
-    //         setSelectedBot(bots[0].id);
-    //     }
-    //         console.log("Param ID:", paramId);
-
-    // }, [params?.botId, bots]);
-
-    const handleCreateDemo = () => {
-        // Implementation would connect to backend
-        console.log("Creating demo with settings:", {
-            selectedBot,
-            logoUrl,
-            avatarUrl,
-            welcomeMessage,
-            themeColor,
-            demoName,
-            isDarkMode,
-        });
-        toast.success("Demo created successfully!");
-    };
+        findWidgetById("4a216f72-0cdf-4a13-b407-04ed9aac739f").then(
+            (widget) => {
+                if (widget) {
+                    setSelectedBot(widget.bots.id);
+                    setDemoName(widget.bots.name);
+                    setThemeColor(widget.color);
+                    setAvatarUrl(widget.avatar_url);
+                    setWelcomeMessage(widget.welcome_msg);
+                    setTitleChat(widget.title);
+                    setIsDarkMode(widget.theme === "dark");
+                    setMessages([
+                        {
+                            id: "welcome-message",
+                            content:
+                                widget.welcome_msg || "Welcome to the demo!",
+                            sender: "bot",
+                            timestamp: new Date(),
+                        },
+                    ]);
+                    setPrompts(
+                        widget.bots.latest_version.prompt_snapshot || []
+                    );
+                    loadPromptContent();
+                    setLoading(false);
+                    setLoadingState(false);
+                } else {
+                    console.error("Widget not found");
+                }
+            }
+        );
+    }, []);
 
     const loadPromptContent = async () => {
         if (selectedBot) {
@@ -155,10 +108,13 @@ const DemoLive = () => {
                     position: "relative",
                     width: "100%",
                     height: "100vh",
+                    background: isDarkMode ? "#1a1a1a" : "#ffffff",
+                    color: "#ffffff"
                 }}
             >
-                <ChatInterface
+             {!loading?   (<ChatInterfaceUser
                     botName={demoName?.toString() || "Demo Bot"}
+                    title={titleChat?.toString() || "Chat Interface"}
                     botId={selectedBot}
                     chooseColor={themeColor?.toString() || "#3a9e91"}
                     openingMessage={
@@ -168,12 +124,17 @@ const DemoLive = () => {
                     urlProfile={avatarUrl?.toString() || ""}
                     messages={messages}
                     setMessages={setMessages}
-                    className="w-full h-full"
+                    className={`w-full h-full`}
                     rules={promptText}
-                />
+                />)
+                : (
+                    <div className="flex items-center justify-center w-full h-full">
+                        <p className="text-lg text-gray-500">Loading...</p>
+                    </div>
+                )}
             </div>
         </CardContent>
     );
 };
 
-export default DemoLive;
+export default Widget;

@@ -4,6 +4,7 @@ import OpenAI from "openai";
 
 export const dynamic = "force-dynamic"; // Wichtig bei App Router für Edge Support
 
+
 // OPTIONS für CORS
 export async function OPTIONS() {
     return new Response(null, {
@@ -17,13 +18,12 @@ export async function OPTIONS() {
 }
 
 // POST für Chat
-export async function POST(req: Request) {
+export async function POST(req: Request) {  
     try {
-        const { botId, messages, token } = await req.json();
-
+        const { botId, messages, token } = await req.json(); 
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // Tetap gunakan anon key sebagai base
             {
                 global: {
                     headers: {
@@ -32,6 +32,7 @@ export async function POST(req: Request) {
                 },
             }
         );
+        
         if (!botId || !Array.isArray(messages)) {
             return new Response(JSON.stringify({ error: "Invalid input" }), {
                 status: 400,
