@@ -10,7 +10,7 @@ export async function OPTIONS() {
     return new Response(null, {
         status: 204,
         headers: {
-            "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+            "Access-Control-Allow-Origin": "https://app.thefiles.io",
             "Access-Control-Allow-Methods": "POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type",
         },
@@ -50,7 +50,7 @@ export async function GET(
             return new Response(JSON.stringify({ error: "Widget not found" }), {
                 status: 404,
                 headers: {
-                    "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                    "Access-Control-Allow-Origin": "https://app.thefiles.io",
                 },
             });
         }
@@ -59,7 +59,7 @@ export async function GET(
             status: 200,
             headers: {
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                "Access-Control-Allow-Origin": "https://app.thefiles.io",
             },
         });
     } catch (error: any) {
@@ -69,7 +69,7 @@ export async function GET(
             {
                 status: 500,
                 headers: {
-                    "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                    "Access-Control-Allow-Origin": "https://app.thefiles.io",
                 },
             }
         );
