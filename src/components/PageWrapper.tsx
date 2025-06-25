@@ -14,7 +14,6 @@ export default function PageWrapper({ children }: { children: React.ReactNode })
     <AnimatePresence mode="wait">
       <motion.div
         key={router.asPath}
-        variants={variants}
         initial="initial"
         animate="animate"
         exit="exit"
