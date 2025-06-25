@@ -35,7 +35,7 @@
                     const iframe = document.createElement("iframe");
                     iframe.id = "chatbot-iframe";
                     iframe.style.display = "none"; // Initially hidden
-                    iframe.src = `http://localhost:3000/widget/${widgetId}`;
+                    iframe.src = `https://app.thefiles.io/widget/${widgetId}`;
                     container.appendChild(iframe);
                     // animate the iframe when it is displayed
                     iframe.style.transition = "transform 0.3s ease";
