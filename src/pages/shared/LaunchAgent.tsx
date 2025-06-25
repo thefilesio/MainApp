@@ -84,6 +84,17 @@ const LaunchAgent = () => {
     const [bubbleSize, setBubbleSize] = useState(56);
     const [open, setOpen] = useState(false);
 
+    const [messages, setMessages] = useState<
+        { id: string; content: string; sender: "bot" | "user"; timestamp: Date }[]
+    >([
+        {
+            id: "welcome-message",
+            content: welcomeMessage || "Welcome to the demo!",
+            sender: "bot",
+            timestamp: new Date(),
+        },
+    ]);
+
     const handleCreateConnection = async () => {
         if (!user) {
             toast({
@@ -213,6 +224,7 @@ const LaunchAgent = () => {
         const bg = isDark ? "#1f2937" : "#fff";
         const fg = isDark ? "#fff" : "#000";
         const border = isDark ? "#444" : "#eee";
+
         // const bot = bot
         return (
             <div style={{ position: "relative", width: "100%", height: "75%" }}>
@@ -280,6 +292,8 @@ const LaunchAgent = () => {
                         <ChatInterface
                             botName={widgetTitle}
                             botId={selectedBot}
+                            setMessages={setMessages}
+                            messages={messages}
                             chooseColor={color}
                             openingMessage={welcomeMessage}
                             bots={bots}
