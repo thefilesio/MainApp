@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Chat Widget</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      
+        <style>
+            body {
+                margin: 0;
+                font-family: sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="chat-root"></div>
+        <script src="http://localhost:3000/widget-local.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                window.AIChatWidget.init({
+                    widgetId: "4a216f72-0cdf-4a13-b407-04ed9aac739f",
+                });
+            });
+        </script>
+    </body>
+</html>

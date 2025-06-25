@@ -109,6 +109,7 @@ const ChatInterfaceUser = ({
                             { role: "user", content: input },
                         ],
                         botId: botId || "default-bot-id", // Use a default bot ID if none is provided
+                        widgetId: "default-widget-id", // Use a default widget ID if none is provided
                     }),
                 });
             } catch (error) {

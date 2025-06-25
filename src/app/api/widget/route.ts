@@ -20,36 +20,131 @@ export async function OPTIONS() {
 // POST für Chat
 export async function POST(req: Request) {
     try {
-        const { token } = await req.json(); 
+        const { botId, messages } = await req.json();
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            {
-                global: {
-                    headers: {
-                        Authorization: `Bearer ${token}`, // <== Token dari client
-                    },
-                },
-            }
+            process.env.SUPABASE_SERVICE_ROLE_KEY! // only on server
         );
-        const { data: widgets, error: widgetsError } = await supabase
-            .from("widgets")
-            .select("*")
-            .eq("is_active", true)
-            .order("created_at", { ascending: false });
-        return new Response(
-            JSON.stringify({
-                data: widgets || [],
-                error: widgetsError ? widgetsError.message : null,
-            }),
-            {
-                status: 200,
+        if (!botId || !Array.isArray(messages)) {
+            return new Response(JSON.stringify({ error: "Invalid input" }), {
+                status: 400,
                 headers: {
-                    "Content-Type": "application/json",
                     "Access-Control-Allow-Origin": "https://chat.thefiles.io",
                 },
-            }
-        );
+            });
+        }
+        console.log("Bot ID:", botId);
+        const { data: bot, error: botError } = await supabase
+            .from("bots")
+            .select("*")
+            .eq("id", botId)
+            .single();
+
+        if (botError || !bot) {
+            return new Response(JSON.stringify({ error: "Bot not found" }), {
+                status: 404,
+                headers: {
+                    "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                },
+            });
+        }
+
+        const lastUserMessage = messages[messages.length - 1].content;
+
+        const { data: suggestedPrompt } = await supabase
+            .from("suggested_prompts")
+            .select("fixed_response")
+            .eq("bot_id", botId)
+            .eq("question", lastUserMessage)
+            .single();
+        if (suggestedPrompt?.fixed_response) {
+            return new Response(
+                JSON.stringify({
+                    message: {
+                        role: "assistant",
+                        content: suggestedPrompt.fixed_response,
+                    },
+                }),
+                {
+                    status: 200,
+                    headers: {
+                        "Access-Control-Allow-Origin":
+                            "https://chat.thefiles.io",
+                    },
+                }
+            );
+        }
+
+        const { data: apiKey, error: keyError } = await supabase
+            .from("api_keys")
+            .select("openai_api_key")
+            .eq("user_id", bot.user_id)
+            .single();
+
+        if (keyError || !apiKey?.openai_api_key) {
+            return new Response(JSON.stringify({ error: "No API key found" }), {
+                status: 401,
+                headers: {
+                    "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                },
+            });
+        }
+
+        const openai = new OpenAI({ apiKey: apiKey.openai_api_key });
+
+        const chatMessages = [
+            {
+                role: "system",
+                content: `You are an AI assistant for [Company Name]. Never fabricate or guess any information about private or internal company details (including history, structure, founders, internal policies, strategy, finances, or client data) unless explicitly provided in your data or documents.
+        
+        If a user asks something outside your known data, respond politely with:  
+        "I'm sorry, I don't have enough information about that."  
+        or  
+        "That information is not publicly available. Please contact an official representative of the company."
+        
+        Your job is to respond accurately, truthfully, and without speculation.
+        
+        Tone: professional, friendly, concise.
+        `,
+            },
+            {
+                role: "system",
+                content: bot.preset_prompt || "You are a helpful assistant.",
+            },
+            ...messages,
+        ];
+
+        const completion = await openai.chat.completions.create({
+            model: bot.model || "gpt-3.5-turbo",
+            messages: chatMessages,
+        });
+
+        const assistantMessage = completion.choices[0].message;
+        try {
+            await supabase.from("messages").insert([
+                {
+                    bot_id: botId,
+                    user_id: bot.user_id,
+                    role: "user",
+                    content: lastUserMessage,
+                },
+                {
+                    bot_id: botId,
+                    user_id: bot.user_id,
+                    role: "assistant",
+                    content: assistantMessage.content,
+                },
+            ]);
+        } catch (logError) {
+            console.error("Logging failed:", logError);
+        }
+
+        return new Response(JSON.stringify({ message: assistantMessage }), {
+            status: 200,
+            headers: {
+                "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+            },
+        });
     } catch (error: any) {
         console.error("Chat API error:", error);
         return new Response(
