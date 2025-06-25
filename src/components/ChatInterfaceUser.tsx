@@ -122,7 +122,9 @@ const ChatInterfaceUser = ({
                     console.error("Error parsing JSON:", error);
                 }
             }
-            console.log("Response data:", data);
+            console.log("Response data aja:", data);
+            
+
             const botMessage: Message = {
                 id: `bot-${Date.now()}`,
                 content: data.message.content || "No response from bot.",
