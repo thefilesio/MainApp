@@ -5,7 +5,7 @@
             // const response = await fetch(`http://localhost:3000/api/widget/${widgetId}`);
             // const config = await response.json();
             let firsClick = true;
-            await fetch(`http://localhost:3000/api/widget-client/${widgetId}`)
+            await fetch(`https://app.thefiles.io/api/widget-client/${widgetId}`)
                 .then((response) => {
                     if (!response.ok) {
                         throw new Error("Network response was not ok");
