@@ -24,7 +24,7 @@ interface ChatInterfaceProps {
     openingMessage?: string; // Optional prop for initial message
     rules?: string; // Optional prop for rules or guideline
     urlProfile?: string; // Optional prop for user profile URL
-    setMessages?: any; // Function to set messages, can be any type
+    setMessages: any; // Function to set messages, can be any type
     messages?: Message[]; // Initial messages to display
 }
 

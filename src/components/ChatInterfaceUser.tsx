@@ -130,6 +130,7 @@ const ChatInterfaceUser = ({
             };
             setMessages((prev) => [...prev, botMessage]);
         } catch (err) {
+            console.error("Error sending message:", err);
             setMessages((prev) => [
                 ...prev,
                 {

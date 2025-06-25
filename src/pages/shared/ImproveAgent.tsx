@@ -44,6 +44,14 @@ const ImproveAgent = () => {
     const [originalText, setOriginalText] = useState("");
     const [botText, setBotText] = useState("");
     const [generatedText, setGeneratedText] = useState("");
+    const [message, setMessage] = useState<any[]>([
+        {
+            id: "welcome-message",
+            content: "Welcome to the Improve Agent page!",
+            sender: "bot",
+            timestamp: new Date(),
+        },
+    ]);
     const [isGenerating, setIsGenerating] = useState(false);
     const [isIntegrationModalOpen, setIsIntegrationModalOpen] = useState(false);
 
@@ -83,7 +91,7 @@ const ImproveAgent = () => {
                     const step1 = prompts.find((p) => p.step === 1);
                     const step2 = prompts.find((p) => p.step === 2);
                     let combinedContent = "";
-                   
+
                     if (step1) {
                         const content = JSON.parse(step1!.content || "{}");
 
@@ -259,8 +267,6 @@ const ImproveAgent = () => {
                 rules: extractSection("Rules", originalText),
                 faq: extractSection("FAQ", originalText),
             };
-
-           
 
             if (
                 step1Content.personality ||
@@ -447,7 +453,15 @@ const ImproveAgent = () => {
                             </TabsContent>
 
                             <TabsContent value="test-ai" className="mt-4">
-                                <ChatInterface  botName={"Test Bot"} botId={selectedBotId} rules={originalText}  />
+                                <ChatInterface
+                                    botName={"Test Bot"}
+                                    botId={selectedBotId}
+                                    rules={originalText}
+                                    setMessages={setMessage}
+                                    messages={message}
+                                    openingMessage="Hello! How can I help you today?"
+                                    chooseColor="#2AB6A6"
+                                />
                             </TabsContent>
                         </Tabs>
                     </div>
