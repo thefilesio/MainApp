@@ -26,6 +26,7 @@ interface ChatInterfaceProps {
     urlProfile?: string; // Optional prop for user profile URL
     setMessages: any; // Function to set messages, can be any type
     messages?: Message[]; // Initial messages to display
+    title?: string; // Title for the chat interface
 }
 
 const ChatInterface = ({
@@ -36,6 +37,7 @@ const ChatInterface = ({
     bots,
     openingMessage,
     urlProfile,
+    title = "Chat Interface",
     setMessages,
     messages = [
         {
@@ -193,9 +195,10 @@ const ChatInterface = ({
                     background-color: ${chooseColor || "#4f46e5"} !important;
                 }
             `}</style>
-            <div className="bg-muted/30 p-4 border-b mainColor">
-                <h2 className="font-medium text-white">{botName}</h2>
+            <div className="bg-muted/30 p-4  mainColor">
+                <h2 className="font-medium text-white">{title}</h2>
             </div>
+
 
             <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4">

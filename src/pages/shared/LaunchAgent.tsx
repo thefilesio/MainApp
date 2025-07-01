@@ -42,16 +42,20 @@ import ChatWidget from "@/components/ChatWidget";
 import { supabase, SUPABASE_KEY } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useApiKeyContext } from "@/contexts/ApiKeyContext";
-import { toast as toastLib } from "sonner";
+import { toast, toast as toastLib } from "sonner";
 import ChatInterface from "@/components/ChatInterface";
 import { useWidgets } from "@/hooks/useWidgets";
+import { motion, AnimatePresence } from "framer-motion";
+import { t } from "framer-motion/dist/types.d-B_QPEvFK";
+import { usePrompts } from "@/hooks/usePrompts";
+import { useLoading } from "@/contexts/LoadingContext";
 
 const LaunchAgent = () => {
-    const { toast } = useToast();
     const { bots } = useBots();
     const { translations } = useLanguage();
     const { user } = useAuth();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoadings] = useState(false);
+    const { setLoading } = useLoading();
 
     const [isIntegrationTypeModalOpen, setIsIntegrationTypeModalOpen] =
         useState(false);
@@ -60,15 +64,30 @@ const LaunchAgent = () => {
         string | null
     >(null);
 
+    const [botStatus, setBotStatus] = useState<"draft" | "published">("draft");
+
     const [position, setPosition] = useState("bottom-right");
     const [color, setColor] = useState("#3a9e91");
     const [widgetTitle, setWidgetTitle] = useState("Chat with us");
     const [selectedBot, setSelectedBot] = useState<string>("");
+    const [botName, setBotName] = useState<string>("");
     const [connectionName, setConnectionName] = useState("");
+
+    const [createConnection, setCreateConnection] = useState({
+        name: "",
+        botId: "",
+        integrationType: "",
+    });
+
+    const [openChat, setOpenChat] = useState(true);
 
     const [logoUrl, setLogoUrl] = useState("");
     const [avatarUrl, setAvatarUrl] = useState("");
     const [buttonIconUrl, setButtonIconUrl] = useState("");
+    const [widgetSetup, setWidgetSetup] = useState({
+        width: 400,
+        height: 500,
+    });
     const [welcomeMessage, setWelcomeMessage] = useState(
         "Hi there! How can I help you today?"
     );
@@ -76,6 +95,7 @@ const LaunchAgent = () => {
     const [widgetHeight, setWidgetHeight] = useState("500");
     const [widgetCollapsed, setWidgetCollapsed] = useState(true);
     const [activeWidgetTab, setActiveWidgetTab] = useState("appearance");
+    const [promptText, setPromptText] = useState("");
 
     const [connections, setConnections] = useState<any[]>([]);
     const [showEmbed, setShowEmbed] = useState(false);
@@ -83,25 +103,63 @@ const LaunchAgent = () => {
     const [previewTheme, setPreviewTheme] = useState<"dark" | "light">("dark");
     const [bubbleSize, setBubbleSize] = useState(56);
     const [open, setOpen] = useState(false);
+    const { prompts } = usePrompts(selectedBot);
+    const loadPromptContent = async () => {
+        if (selectedBot) {
+            try {
+                const step1 = prompts.find((p) => p.step === 1);
+                const step2 = prompts.find((p) => p.step === 2);
+                let combinedContent = "";
+                if (step1) {
+                    const content = JSON.parse(step1!.content || "{}");
+
+                    combinedContent = `~Personality\n${
+                        content!.personality || ""
+                    }\n~Personality\n\n~Purpose\n${
+                        content!.purpose || ""
+                    }\n~Purpose\n\n~Tone\n${content!.tone || ""}\n~Tone\n\n`;
+                }
+
+                if (step2) {
+                    try {
+                        const content2 = JSON.parse(step2!.content || "{}");
+
+                        combinedContent += `\n\n~Rules\n${
+                            content2!.rules
+                        }\n~Rules\n\n~FAQ\n${content2!.faq}\n~FAQ\n`;
+                    } catch (error) {
+                        console.log("Error parsing step 2 content:", error);
+                    }
+                }
+                setPromptText(combinedContent);
+            } catch (error) {
+                console.error("Error loading prompt content:", error);
+            }
+        }
+    };
 
     const [messages, setMessages] = useState<
-        { id: string; content: string; sender: "bot" | "user"; timestamp: Date }[]
+        {
+            id: string;
+            content: string;
+            sender: "bot" | "user";
+            timestamp: Date;
+        }[]
     >([
         {
             id: "welcome-message",
-            content: welcomeMessage || "Welcome to the demo!",
+            content: welcomeMessage || "Hi there! How can I help you today?",
             sender: "bot",
             timestamp: new Date(),
         },
     ]);
+    const bg = previewTheme == "dark" ? "#1a1a1a" : "#ffffff";
+    const fg = previewTheme == "dark" ? "#ffffff" : "#000000";
 
-    const handleCreateConnection = async () => {
+    const storeConnection = async () => {
+        setLoading(true);
         if (!user) {
-            toast({
-                title: "Error",
-                description: "User not authenticated",
-                variant: "destructive",
-            });
+            toast.error("You must be logged in to create a widget.");
             return;
         }
         const widgetData = {
@@ -115,42 +173,128 @@ const LaunchAgent = () => {
             logo_url: logoUrl,
             icon_url: buttonIconUrl,
             position,
+            bubble_size: bubbleSize,
             width: Number(widgetWidth),
             height: Number(widgetHeight),
             popup_text: "",
             popup_delay: null,
         };
+
         const { data, error } = await supabase
             .from("widgets")
             .insert([widgetData])
             .select()
             .single();
         if (error) {
-            toast({
-                title: "Error",
-                description: error.message,
-                variant: "destructive",
-            });
+            setLoading(false);
+            toast.error("Failed to save widget. Please try again later.");
         } else {
-            toast({
-                title: "Widget deployed",
-                description: "Widget wurde gespeichert.",
-            });
-            // Optional: Widget-Liste neu laden oder UI updaten
+            setLoading(false);
+            toast.success(
+                "Widget saved successfully! You can now embed it on your website."
+            );
+            resetForm();
+            setBotStatus("published");
+            setIsWidgetEditorOpen(false); // Optional: Widget-Liste neu laden oder UI updaten
         }
+    };
+
+    const resetForm = () => {
+        setWidgetTitle("Chat with us");
+        setSelectedBot("");
+        setLogoUrl("");
+        setAvatarUrl("");
+        setButtonIconUrl("");
+        setWelcomeMessage("Hi there! How can I help you today?");
+        setWidgetWidth("400");
+        setWidgetHeight("500");
+        setPosition("bottom-right");
+
+        setColor("#3a9e91");
+        setBubbleSize(56);
+        setPreviewTheme("dark");
+        setOpen(false);
+        setMessages([
+            {
+                id: "welcome-message",
+                content: "Hi there! How can I help you today?",
+                sender: "bot",
+                timestamp: new Date(),
+            },
+        ]);
+        setShowEmbed(false);
+        setIsWidgetEditorOpen(false);
+        setIsIntegrationTypeModalOpen(false);
+        setSelectedIntegration(null);
+        setConnectionName("");
+        setShowEmbed(false);
+        setBotStatus("draft");
+    };
+
+    const handleCreateConnection = async () => {
+        if (!user) {
+            toast.error("You must be logged in to create a connection.");
+            return;
+        }
+        resetForm();
         setIsIntegrationTypeModalOpen(true);
     };
+
+    const handleEditConnection = (connection: any) => {
+        console.log("Editing connection:", connection);
+        setSelectedBot(connection.buildId);
+        setBotName(bots.find((b) => b.id === connection.buildId)?.name || "");
+        setLogoUrl(connection.logoUrl || "");
+        setAvatarUrl(connection.avatarUrl || "");
+        setButtonIconUrl(connection.buttonIconUrl || "");
+        setWidgetSetup({
+            width: connection.width || 400,
+            height: connection.height || 500,
+        });
+        setPosition(connection.position || "bottom-right");
+        setPreviewTheme(connection.theme || "dark");
+        setColor(connection.color || "#3a9e91");
+        setBubbleSize(connection.bubbleSize || 56);
+        setWidgetTitle(connection.name);
+        setConnectionName(connection.name);
+        setBotStatus("published");
+        setShowEmbed(true);
+        setIsWidgetEditorOpen(true);
+    };
+
+    useEffect(() => {
+        setMessages([
+            {
+                id: "welcome-message",
+                content: welcomeMessage || "Welcome to the demo!",
+                sender: "bot",
+                timestamp: new Date(),
+            },
+        ]);
+    }, [welcomeMessage]);
     const { fetchWidgets } = useWidgets();
     useEffect(() => {
         setLoading(true);
         fetchWidgets()
             .then((fetchedWidgets) => {
                 setConnections(
-                    fetchedWidgets.map((widget) => ({
+                    fetchedWidgets.map((widget:any) => ({
                         id: widget.id,
                         name: widget.title,
+                        buildName: bots.find((b) => b.id === widget.bot_id)
+                            ?.name || "Unknown Bot",
+                        welcomeMessage: widget.welcome_msg,
                         integrationType: "website",
                         buildId: widget.bot_id,
+                        logoUrl: widget.logo_url,
+                        avatarUrl: widget.avatar_url,
+                        buttonIconUrl: widget.icon_url,
+                        bubbleSize: widget.bubble_size || 56,
+                        width: widget.width,
+                        height: widget.height,
+                        position: widget.position,
+                        theme: widget.theme,
+                        color: widget.color,
                         enabled: true,
                     }))
                 );
@@ -201,111 +345,9 @@ const LaunchAgent = () => {
         },
     ];
 
-    // Dummy/Preview ChatWidget für Live-Preview (ohne Backend)
-    function LivePreviewChatWidget({
-        title,
-        position,
-        color,
-        logoUrl,
-        avatarUrl,
-        buttonIconUrl,
-        welcomeMessage,
-        width,
-        height,
-        theme,
-        bubbleSize,
-    }: any) {
-        const [input, setInput] = useState("");
-        // Farben und Layout je nach Theme
-        useEffect(() => {
-            setOpen(true);
-        }, [theme]);
-        const isDark = theme === "dark";
-        const bg = isDark ? "#1f2937" : "#fff";
-        const fg = isDark ? "#fff" : "#000";
-        const border = isDark ? "#444" : "#eee";
-
-        // const bot = bot
-        return (
-            <div style={{ position: "relative", width: "100%", height: "75%" }}>
-                {/* Bubble Button */}
-                <div
-                    style={{
-                        position: "absolute",
-                        zIndex: 10,
-                        bottom: 24,
-                        [position === "bottom-left" ? "left" : "right"]: 24,
-                        width: bubbleSize,
-                        height: bubbleSize,
-                        borderRadius: "50%",
-                        background: color,
-                        display: open ? "none" : "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                        cursor: "pointer",
-                    }}
-                    onClick={() => setOpen(true)}
-                >
-                    <img
-                        src={buttonIconUrl || "/chat-icon.svg"}
-                        alt="Chat"
-                        style={{
-                            width: bubbleSize * 0.5,
-                            height: bubbleSize * 0.5,
-                        }}
-                    />
-                </div>
-                {/* Chat Window */}
-                {open && (
-                    <div
-                        style={{
-                            position: "absolute",
-                            zIndex: 20,
-                            bottom: bubbleSize + 32,
-                            [position === "bottom-left" ? "left" : "right"]: 24,
-                            width: width + "px",
-                            height: height + "px",
-                            background: bg,
-                            borderColor: "none",
-                            color: fg,
-                            borderRadius: 16,
-                            boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
-                            display: "flex",
-                            flexDirection: "column",
-                            overflow: "hidden",
-                        }}
-                    >
-                        <button
-                            className="absolute top-3 right-5"
-                            onClick={() => setOpen(false)}
-                            style={{
-                                color: fg,
-                                background: "none",
-                                border: "none",
-                                fontSize: 20,
-                                cursor: "pointer",
-                            }}
-                        >
-                            ✖
-                        </button>
-                        <ChatInterface
-                            botName={widgetTitle}
-                            botId={selectedBot}
-                            setMessages={setMessages}
-                            messages={messages}
-                            chooseColor={color}
-                            openingMessage={welcomeMessage}
-                            bots={bots}
-                        />
-                    </div>
-                )}
-            </div>
-        );
-    }
 
     return (
-        <div className="dark:bg-dark min-h-screen px-4 py-8">
+        <div className="dark:bg-dark min-h-screen overflow-y-auto px-4 py-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-10">
                 <div>
                     <h1 className="text-3xl font-extrabold text-[#2AB6A6] mb-1">
@@ -332,7 +374,10 @@ const LaunchAgent = () => {
                         {connections.map((conn, idx) => (
                             <div
                                 key={conn.id}
-                                className="flex items-center justify-between bg-card p-4 rounded shadow dark:bg-main-dark border dark:border-[#22304a] "
+                                onClick={() => {
+                                    handleEditConnection(conn);
+                                }}
+                                className="flex items-center cursor-pointer justify-between bg-card p-4 rounded shadow dark:bg-main-dark border dark:border-[#22304a] "
                             >
                                 <div>
                                     <div className="font-medium">
@@ -413,7 +458,7 @@ const LaunchAgent = () => {
                     if (!open) setIsIntegrationTypeModalOpen(false);
                 }}
             >
-                <DialogContent className="sm:max-w-[600px] bg-white">
+                <DialogContent className="sm:max-w-[600px] bg-white dark:bg-main-dark dark:text-white">
                     <DialogHeader>
                         <DialogTitle className="text-2xl">
                             {translations.launchAgent.selectIntegration}
@@ -509,25 +554,40 @@ const LaunchAgent = () => {
                         <div className="flex justify-end mt-4">
                             <Button
                                 onClick={() => {
-                                    // Connection anlegen
-                                    setConnections((prev) => [
-                                        ...prev,
-                                        {
-                                            id: Date.now().toString(),
-                                            name: connectionName,
-                                            integrationType:
-                                                selectedIntegration,
-                                            buildId: selectedBot,
-                                            buildName:
-                                                bots.find(
-                                                    (b) => b.id === selectedBot
-                                                )?.name || "",
-                                            enabled: true,
-                                        },
-                                    ]);
-                                    setIsIntegrationTypeModalOpen(false);
-                                    if (selectedIntegration === "website")
-                                        setIsWidgetEditorOpen(true);
+                                    setCreateConnection({
+                                        name: connectionName ?? "",
+                                        botId: selectedBot,
+                                        integrationType:
+                                            selectedIntegration ?? "",
+                                    });
+                                    setBotName(
+                                        bots.find((b) => b.id === selectedBot)
+                                            ?.name || ""
+                                    );
+                                    loadPromptContent()
+                                        .then(() => {
+                                            setIsIntegrationTypeModalOpen(
+                                                false
+                                            );
+                                            if (
+                                                selectedIntegration ===
+                                                "website"
+                                            )
+                                                setIsWidgetEditorOpen(true);
+                                        })
+                                        .catch((error) => {
+                                            setIsIntegrationTypeModalOpen(
+                                                false
+                                            );
+
+                                            console.error(
+                                                "Error loading prompts:",
+                                                error
+                                            );
+                                            toastLib.error(
+                                                "Failed to load prompts."
+                                            );
+                                        });
                                 }}
                                 disabled={
                                     !connectionName.trim() ||
@@ -537,7 +597,7 @@ const LaunchAgent = () => {
                                 className="w-full"
                                 size="lg"
                             >
-                                {translations.launchAgent.createConnection}
+                                Next
                             </Button>
                         </div>
                     </div>
@@ -549,15 +609,25 @@ const LaunchAgent = () => {
                 open={isWidgetEditorOpen}
                 onOpenChange={setIsWidgetEditorOpen}
             >
-                <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white">
+                <DialogContent
+                    style={{ maxWidth: "90vw", maxHeight: "90vh" }}
+                    className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white"
+                >
                     <DialogHeader>
                         <DialogTitle className="text-2xl">
-                            Widget Editor
+                            Widget Editor -{" "}
+                            {botStatus === "draft" ? (
+                                <span className="text-yellow-500">Draft</span>
+                            ) : (
+                                <span className="text-green-500">
+                                    Published
+                                </span>
+                            )}
                         </DialogTitle>
                     </DialogHeader>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
                         {/* Editor Form */}
-                        <div className="space-y-4">
+                        <div className="space-y-4 col-span-1">
                             <div>
                                 <Label>Widget Title</Label>
                                 <Input
@@ -568,25 +638,13 @@ const LaunchAgent = () => {
                                 />
                             </div>
                             <div>
-                                <Label>Choose Build</Label>
-                                <Select
-                                    value={selectedBot}
-                                    onValueChange={setSelectedBot}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Choose Build" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {bots.map((bot) => (
-                                            <SelectItem
-                                                key={bot.id}
-                                                value={bot.id}
-                                            >
-                                                {bot.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <Label>Agent</Label>
+                                <input
+                                    type="text"
+                                    value={botName}
+                                    readOnly
+                                    className="w-full p-2 border rounded bg-gray-100 dark:bg-gray-800 dark:text-white"
+                                />
                             </div>
                             <div>
                                 <Label>Logo URL</Label>
@@ -655,9 +713,12 @@ const LaunchAgent = () => {
                                 <div>
                                     <Label>Width</Label>
                                     <Input
-                                        value={widgetWidth}
+                                        value={widgetSetup.width}
                                         onChange={(e) =>
-                                            setWidgetWidth(e.target.value)
+                                            setWidgetSetup({
+                                                ...widgetSetup,
+                                                width: Number(e.target.value),
+                                            })
                                         }
                                         type="number"
                                         min={300}
@@ -667,9 +728,12 @@ const LaunchAgent = () => {
                                 <div>
                                     <Label>Height</Label>
                                     <Input
-                                        value={widgetHeight}
+                                        value={widgetSetup.height}
                                         onChange={(e) =>
-                                            setWidgetHeight(e.target.value)
+                                            setWidgetSetup({
+                                                ...widgetSetup,
+                                                height: Number(e.target.value),
+                                            })
                                         }
                                         type="number"
                                         min={300}
@@ -731,29 +795,145 @@ const LaunchAgent = () => {
                                     }
                                 />
                             </div>
-                            <Button
+                           {botStatus === "draft" ? (
+                             <Button
                                 className="w-full mt-4"
-                                onClick={() => setShowEmbed(true)}
+                                onClick={() => storeConnection()}
                             >
                                 Deploy Widget
                             </Button>
+                            ): (
+                                <Button
+                                    className="w-full mt-4"
+                                    onClick={() => {
+                                        setShowEmbed(true);
+                                        setBotStatus("published");
+                                    }   }
+                                >
+                                    Update Widget   </Button>
+                            )}
                         </div>
                         {/* Live Preview */}
-                        <div className="bg-muted rounded-lg p-4 flex flex-col items-center">
+                        <div className=" flex flex-col items-center col-span-2">
                             <Label className="mb-2">Preview</Label>
-                            <LivePreviewChatWidget
-                                title={widgetTitle}
-                                position={position}
-                                color={color}
-                                logoUrl={logoUrl}
-                                avatarUrl={avatarUrl}
-                                buttonIconUrl={buttonIconUrl}
-                                welcomeMessage={welcomeMessage}
-                                width={widgetWidth}
-                                height={widgetHeight}
-                                theme={previewTheme}
-                                bubbleSize={bubbleSize}
-                            />
+                            <div
+                                style={{
+                                    position: "relative",
+                                    width: "100%",
+                                    height: "75%",
+                                    backgroundColor: "#000",
+                                }}
+                            >
+                                {/* Bubble Button */}
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        zIndex: 10,
+                                        bottom: 24,
+                                        [position === "bottom-left"
+                                            ? "left"
+                                            : "right"]: 24,
+                                        width: bubbleSize + "px",
+                                        height: bubbleSize + "px",
+                                        borderRadius: "50%",
+                                        background: color,
+                                        display: openChat ? "none" : "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        boxShadow:
+                                            "0 4px 12px rgba(0,0,0,0.15)",
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() => setOpenChat(true)}
+                                >
+                                    {logoUrl ? (
+                                        <img
+                                            src={logoUrl}
+                                            alt="Chat"
+                                            style={{
+                                                width: bubbleSize * 0.5 + "px",
+                                                height: bubbleSize * 0.5 + "px",
+                                            }}
+                                        />
+                                    ) : (
+                                        <div>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width={bubbleSize * 0.5}
+                                                height={bubbleSize * 0.5}
+                                                viewBox="0 0 24 24"
+                                                fill={"#ffff"}
+                                                stroke="#001A72"
+                                            >
+                                                <path
+                                                    d="M20 4H4V16H7V21L12 16H20V4Z"
+                                                    stroke="#001A72"
+                                                    stroke-width="1.5"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                />
+                                            </svg>
+                                        </div>
+                                    )}
+                                </div>
+                                <AnimatePresence>
+                                    {openChat && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 30 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 30 }}
+                                            transition={{ duration: 0.3 }}
+                                            style={{
+                                                position: "absolute",
+                                                zIndex: 20,
+                                                bottom: bubbleSize,
+                                                [position === "bottom-left"
+                                                    ? "left"
+                                                    : "right"]: 24,
+                                                width: widgetSetup.width + "px",
+                                                height:
+                                                    widgetSetup.height + "px",
+                                                background: bg,
+                                                borderRadius: 10,
+                                                color: fg,
+                                                boxShadow:
+                                                    "0 8px 24px rgba(0,0,0,0.25)",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                overflow: "hidden",
+                                            }}
+                                        >
+                                            <button
+                                                className="absolute top-3 right-5"
+                                                onClick={() =>
+                                                    setOpenChat(false)
+                                                }
+                                                style={{
+                                                    color: "#fff",
+                                                    background: "none",
+                                                    border: "none",
+                                                    fontSize: 20,
+                                                    cursor: "pointer",
+                                                }}
+                                            >
+                                                ✖
+                                            </button>
+                                            <ChatInterface
+                                                botName={botName}
+                                                botId={selectedBot}
+                                                title={widgetTitle}
+                                                chooseColor={color}
+                                                openingMessage={welcomeMessage}
+                                                urlProfile={avatarUrl}
+                                                messages={messages}
+                                                setMessages={setMessages}
+                                                className="w-full h-full"
+                                                rules={promptText}
+                                            />
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </div>
                     </div>
                     {/* Embed Code Anzeige nach Deploy */}
