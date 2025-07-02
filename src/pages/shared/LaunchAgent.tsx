@@ -197,6 +197,7 @@ const LaunchAgent = () => {
             );
             resetForm();
             setBotStatus("published");
+            reloadWidgets();
             setIsWidgetEditorOpen(false); // Optional: Widget-Liste neu laden oder UI updaten
         }
     };
