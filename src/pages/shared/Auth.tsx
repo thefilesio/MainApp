@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/router";
+import { toast } from "sonner";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -22,15 +23,18 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLogin) {
-      await signIn(email, password);
+      await signIn(email, password).catch((error) => {
+        console.error("Login failed:", error);
+        toast.error("Login failed. Please check your credentials.");
+      });
     } else {
       await signUp(email, password);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="w-full max-w-md p-4">
+    <div className="flex items-center justify-center min-h-screen bg-background dark:text-white">
+      <div className="w-full max-w-md p-4 rounded">
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">

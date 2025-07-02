@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useRouter } from "next/router";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface AuthContextType {
   session: Session | null;
@@ -84,18 +84,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       
-      toast({
-        title: "Success",
-        description: "You have been signed in successfully.",
-      });
+      toast.success("Signed in successfully!");
       
       router.push("/build");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to sign in",
-        variant: "destructive",
-      });
+      toast.error("Failed to sign in. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -110,16 +103,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
       
-      toast({
-        title: "Success",
-        description: "Account created successfully. Please check your email for verification.",
-      });
+      toast.success("Account created successfully! Please check your email to verify your account.");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create account",
-        variant: "destructive",
-      });
+      toast.error("Failed to sign up. Please check your details.");
     } finally {
       setLoading(false);
     }
