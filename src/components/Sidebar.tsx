@@ -60,6 +60,7 @@ function LogoutButton() {
 
 const Sidebar = ({ onClose, translatedLinks }: SidebarProps) => {
   const router = useRouter();
+  const {user} = useAuth();
 
 
 
@@ -114,7 +115,7 @@ const Sidebar = ({ onClose, translatedLinks }: SidebarProps) => {
         <button className="w-full flex items-center gap-3 rounded-lg px-4 py-3 hover:bg-muted transition">
           <Avatar />
           <div className="flex flex-col text-left">
-            <span className="text-base font-medium text-foreground">Dein Name</span>
+            <span className="text-base font-medium text-foreground">{user?.email || "Guest"}</span>
             <span className="text-xs text-muted-foreground">Account</span>
           </div>
         </button>

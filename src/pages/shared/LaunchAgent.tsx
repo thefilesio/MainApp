@@ -722,7 +722,7 @@ const LaunchAgent = () => {
             >
                 <DialogContent
                     style={{ maxWidth: "90vw", maxHeight: "90vh" }}
-                    className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white"
+                    className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white dark:text-white"
                 >
                     <DialogHeader>
                         <DialogTitle className="text-2xl">

@@ -49,8 +49,8 @@ export default function ApiKeyPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-4">API Key Management</h1>
-      <div className="bg-card rounded-lg shadow-md p-6 mb-8">
+      <h1 className="text-3xl font-bold mb-4 dark:text-white">API Key Management</h1>
+      <div className="bg-white dark:bg-main-dark dark:text-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
           <span role="img" aria-label="key">🔑</span> OpenAI API Key
         </h2>

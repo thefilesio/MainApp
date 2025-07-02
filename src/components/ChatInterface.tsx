@@ -210,7 +210,7 @@ const ChatInterface = ({
                                     ? "justify-end"
                                     : "justify-start"
                             }
-                            dark:text-secondary-foreground
+                            
                             text-white
                             
 
@@ -310,7 +310,7 @@ const ChatInterface = ({
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Type your message..."
-                        className="min-h-12 resize-none bg-card"
+                        className="min-h-12 resize-none bg-card text-white"
                         disabled={loading}
                         onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {

@@ -30,7 +30,7 @@ export const LanguageToggle = () => {
           <Globe className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[150px]">
+      <DropdownMenuContent align="end" className="min-w-[150px] bg-white dark:bg-main-dark dark:text-white ml-10">
         {languages.map(({ label, value }) => (
           <DropdownMenuItem
             key={value}
