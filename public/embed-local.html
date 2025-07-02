@@ -17,8 +17,11 @@
         <script src="http://localhost:3000/widget-local.js"></script>
         <script>
             document.addEventListener("DOMContentLoaded", function () {
+                // get params id from url
+                 const botId = new URLSearchParams(window.location.search).get("widgetId") || "4b3e88f0-b23e-4be9-997b-6ae59d2c9fbd";
                 window.AIChatWidget.init({
-                    widgetId: "4a216f72-0cdf-4a13-b407-04ed9aac739f",
+                    widgetId: botId,
+                    webUrl: "http://localhost:3000",
                 });
             });
         </script>

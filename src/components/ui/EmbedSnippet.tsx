@@ -13,6 +13,7 @@ interface EmbedSnippetProps {
     welcomeMessage?: string;
     width?: string;
     height?: string;
+    widgetId?: string;
 }
 
 export default function EmbedSnippet({
@@ -24,28 +25,23 @@ export default function EmbedSnippet({
     avatarUrl = "",
     buttonIconUrl = "",
     welcomeMessage = "Hi there! How can I help you today?",
+    widgetId,
     width = "400",
     height = "500",
 }: EmbedSnippetProps) {
-    const [responsive, setResponsive] = useState(true);
-
+    const [responsive, setResponsive] = useState(false);
+    const WEB_URL =
+        process.env.NEXT_PUBLIC_APP_URL || "https://app.thefiles.io/widget.js";
     const scriptSnippet = `
 <!-- Chatbot Widget -->
+ <script src="${WEB_URL}/widget.js"></script>
 <script>
-  window.chatbotSettings = {
-    position: "${position}",
-    primaryColor: "${color}",
-    title: "${title}",
-    botId: "${botId}",
-    logoUrl: "${logoUrl}",
-    avatarUrl: "${avatarUrl}",
-    buttonIconUrl: "${buttonIconUrl}",
-    welcomeMessage: "${welcomeMessage}",
-    width: "${width}px",
-    height: "${height}px"
-  };
-</script>
-<script src="https://cdn.chat.thefiles.io/widget.js" async></script>`;
+document.addEventListener("DOMContentLoaded", function () {
+   window.AIChatWidget.init({
+     widgetId: "${widgetId}",
+     webUrl: "${WEB_URL}",        
+    });
+</script>`;
 
     const iframeSnippet = responsive
         ? `<iframe
@@ -80,6 +76,17 @@ export default function EmbedSnippet({
                 <pre className="p-4 mt-2 rounded bg-muted text-sm overflow-x-auto whitespace-pre-wrap">
                     <code>{responsive ? iframeSnippet : scriptSnippet}</code>
                 </pre>
+                <button
+                    onClick={() =>
+                        window.open(
+                            `${WEB_URL}/embed.html?widgetId=${widgetId}`,
+                            "_blank"
+                        )
+                    }
+                    className="mt-2 px-4 py-2 mr-2  border-2  border-primary text-primary rounded"
+                >
+                    Preview
+                </button>
                 <button
                     onClick={() =>
                         copyToClipboard(

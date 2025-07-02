@@ -1,11 +1,22 @@
 // public/widget.js
 (function () {
-    const loadWidget = async (widgetId) => {
+    const loadWidget = async ( widgetId, webUrl ) => {
+        if (!widgetId) {
+            console.error("No widgetId provided");
+            return;
+        }
         try {
-            // const response = await fetch(`http://localhost:3000/api/widget/${widgetId}`);
+            // const response = await fetch(`${webUrl}/api/widget/${widgetId}`);
             // const config = await response.json();
             let firsClick = true;
-            await fetch(`http://localhost:3000/api/widget-client/${widgetId}`)
+            if (!widgetId) {
+                console.error("No widgetId provided");
+                return;
+            }
+            if (!webUrl) {
+                webUrl = "https://app.thefiles.io";
+            }
+            await fetch(`${webUrl}/api/widget-client/${widgetId}`)
                 .then((response) => {
                     if (!response.ok) {
                         throw new Error("Network response was not ok");
@@ -19,13 +30,14 @@
                             "No config found for widget ID: " + widgetId
                         );
                     }
-
+                    console.log("[AI Widget] Config:", conf);
                     const config = {
                         color: conf?.widget?.color || "#4A90E2", // Default color
                         position: conf?.widget?.position || "bottom-right", // Default position
                         width: conf?.widget?.width || 400, // Default width
                         height: conf?.widget?.height || 600, // Default height
                         buttonIconUrl: conf?.widget?.icon_url, // Default icon URL
+                        bubbleSize: conf?.widget?.bubble_size || "56", // Default bubble size
                     };
 
                     const container = document.createElement("div");
@@ -35,7 +47,7 @@
                     const iframe = document.createElement("iframe");
                     iframe.id = "chatbot-iframe";
                     iframe.style.display = "none"; // Initially hidden
-                    iframe.src = `http://localhost:3000/widget/${widgetId}`;
+                    iframe.src = `${webUrl}/widget/${widgetId}`;
                     container.appendChild(iframe);
                     // animate the iframe when it is displayed
                     iframe.style.transition = "transform 0.3s ease";
@@ -58,8 +70,8 @@
             z-index: 9999;
           }
           #chatbot-bubble {
-            width: 56px;
-            height: 56px;
+            width: ${config.bubbleSize}px;
+            height: ${config.bubbleSize}px;
             border-radius: 50%;
             background-color: ${config.color};
             display: flex;
@@ -177,10 +189,13 @@
     };
 
     window.AIChatWidget = {
-        init: ({ widgetId }) => {
+        init: ({ widgetId, webUrl }) => {
             if (!widgetId) return console.error("No widgetId provided");
             console.log(`[AI Widget] Initializing widget with ID: ${widgetId}`);
-            loadWidget(widgetId);
+            if (!webUrl) {
+                webUrl = "https://app.thefiles.io";
+            }
+            loadWidget(widgetId, webUrl);
         },
     };
 })();

@@ -21,7 +21,7 @@ export const useWidgets = () => {
       return response.widget;
     } catch (error) {
       console.error("Error fetching bots:", error);
-      throw error;
+      return null;
     }
   };
 

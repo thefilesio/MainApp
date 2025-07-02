@@ -49,6 +49,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { t } from "framer-motion/dist/types.d-B_QPEvFK";
 import { usePrompts } from "@/hooks/usePrompts";
 import { useLoading } from "@/contexts/LoadingContext";
+import Swal from "sweetalert2";
 
 const LaunchAgent = () => {
     const { bots } = useBots();
@@ -88,6 +89,7 @@ const LaunchAgent = () => {
         width: 400,
         height: 500,
     });
+    const [widgetId, setWidgetId] = useState<string>("");
     const [welcomeMessage, setWelcomeMessage] = useState(
         "Hi there! How can I help you today?"
     );
@@ -198,6 +200,49 @@ const LaunchAgent = () => {
             setIsWidgetEditorOpen(false); // Optional: Widget-Liste neu laden oder UI updaten
         }
     };
+    const updateConnection = async () => {
+        setLoading(true);
+        if (!user) {
+            toast.error("You must be logged in to create a widget.");
+            return;
+        }
+        
+        const widgetData = {
+            bot_id: selectedBot,
+            user_id: user.id,
+            title: widgetTitle,
+            welcome_msg: welcomeMessage,
+            theme: previewTheme,
+            color,
+            avatar_url: avatarUrl,
+            logo_url: logoUrl,
+            icon_url: buttonIconUrl,
+            position,
+            bubble_size: bubbleSize,
+            width: Number(widgetSetup.width),
+            height: Number(widgetSetup.height),
+            popup_text: "",
+            popup_delay: null,
+        };
+        console.log("Updating widget with data:", widgetData);
+
+        const { data, error } = await supabase
+            .from("widgets")
+            .update(widgetData)
+            .eq("id", connections.find((c) => c.buildId === selectedBot)?.id)
+            .select()
+            .single();
+        if (error) {
+            setLoading(false);
+            toast.error("Failed to save widget. Please try again later.");
+        } else {
+            setLoading(false);
+            reloadWidgets();
+            toast.success(
+                "Widget updated successfully! You can now embed it on your website."
+            );
+        }
+    };
 
     const resetForm = () => {
         setWidgetTitle("Chat with us");
@@ -243,6 +288,7 @@ const LaunchAgent = () => {
     const handleEditConnection = (connection: any) => {
         console.log("Editing connection:", connection);
         setSelectedBot(connection.buildId);
+        setWidgetId(connection.id);
         setBotName(bots.find((b) => b.id === connection.buildId)?.name || "");
         setLogoUrl(connection.logoUrl || "");
         setAvatarUrl(connection.avatarUrl || "");
@@ -273,16 +319,52 @@ const LaunchAgent = () => {
         ]);
     }, [welcomeMessage]);
     const { fetchWidgets } = useWidgets();
+
+    const reloadWidgets = () => {
+        setLoading(true);
+        fetchWidgets()
+            .then((fetchedWidgets) => {
+                setConnections(
+                    fetchedWidgets.map((widget: any) => ({
+                        id: widget.id,
+                        name: widget.title,
+                        buildName:
+                            bots.find((b) => b.id === widget.bot_id)?.name ||
+                            "Unknown Bot",
+                        welcomeMessage: widget.welcome_msg,
+                        integrationType: "website",
+                        buildId: widget.bot_id,
+                        logoUrl: widget.logo_url,
+                        avatarUrl: widget.avatar_url,
+                        buttonIconUrl: widget.icon_url,
+                        bubbleSize: widget.bubble_size || 56,
+                        width: widget.width,
+                        height: widget.height,
+                        position: widget.position,
+                        theme: widget.theme,
+                        color: widget.color,
+                        enabled: true,
+                    }))
+                );
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching widgets:", error);
+                setConnections([]);
+                setLoading(false);
+            });
+    };
     useEffect(() => {
         setLoading(true);
         fetchWidgets()
             .then((fetchedWidgets) => {
                 setConnections(
-                    fetchedWidgets.map((widget:any) => ({
+                    fetchedWidgets.map((widget: any) => ({
                         id: widget.id,
                         name: widget.title,
-                        buildName: bots.find((b) => b.id === widget.bot_id)
-                            ?.name || "Unknown Bot",
+                        buildName:
+                            bots.find((b) => b.id === widget.bot_id)?.name ||
+                            "Unknown Bot",
                         welcomeMessage: widget.welcome_msg,
                         integrationType: "website",
                         buildId: widget.bot_id,
@@ -345,9 +427,36 @@ const LaunchAgent = () => {
         },
     ];
 
+    const handleDeleteConnection = (id: string) => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This action cannot be undone.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Delete",
+            cancelButtonText: "Cancel",
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                setLoading(true);
+                const { error } = await supabase
+                    .from("widgets")
+                    .delete()
+                    .eq("id", id);
+                if (error) {
+                    toast.error("Failed to delete connection.");
+                } else {
+                    setConnections((prev) =>
+                        prev.filter((conn) => conn.id !== id)
+                    );
+                    toast.success("Connection deleted successfully.");
+                }
+                setLoading(false);
+            }
+        });
+    };
 
     return (
-        <div className="dark:bg-dark min-h-screen overflow-y-auto px-4 py-8">
+        <div className="dark:bg-dark overflow-y-auto px-4  h-[97vh] py-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-10">
                 <div>
                     <h1 className="text-3xl font-extrabold text-[#2AB6A6] mb-1">
@@ -368,18 +477,21 @@ const LaunchAgent = () => {
 
             {/* Connection List */}
             {connections.length > 0 && (
-                <div className="mb-8 text-black dark:text-white">
+                <div className="mb-8 text-black dark:text-white  overflow-y-auto">
                     <h2 className="text-lg font-semibold mb-4">Connections</h2>
-                    <div className="space-y-4">
+                    <div className="space-y-4 ">
                         {connections.map((conn, idx) => (
                             <div
                                 key={conn.id}
+                                
+                                className="flex items-center cursor-pointer justify-between bg-card p-4 rounded shadow dark:bg-main-dark border dark:border-[#22304a] "
+                            >
+                                <div 
                                 onClick={() => {
                                     handleEditConnection(conn);
                                 }}
-                                className="flex items-center cursor-pointer justify-between bg-card p-4 rounded shadow dark:bg-main-dark border dark:border-[#22304a] "
-                            >
-                                <div>
+                                className="flex-1  mr-4"
+                                >
                                     <div className="font-medium">
                                         {conn.name}
                                     </div>
@@ -389,7 +501,7 @@ const LaunchAgent = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <Switch
+                                    {/* <Switch
                                         checked={conn.enabled}
                                         onCheckedChange={(val) => {
                                             setConnections((prev) =>
@@ -400,14 +512,12 @@ const LaunchAgent = () => {
                                                 )
                                             );
                                         }}
-                                    />
+                                    /> */}
                                     <Button
                                         variant="destructive"
                                         size="sm"
                                         onClick={() =>
-                                            setConnections((prev) =>
-                                                prev.filter((_, i) => i !== idx)
-                                            )
+                                            handleDeleteConnection(conn.id)
                                         }
                                     >
                                         Delete
@@ -795,22 +905,22 @@ const LaunchAgent = () => {
                                     }
                                 />
                             </div>
-                           {botStatus === "draft" ? (
-                             <Button
-                                className="w-full mt-4"
-                                onClick={() => storeConnection()}
-                            >
-                                Deploy Widget
-                            </Button>
-                            ): (
+                            {botStatus === "draft" ? (
+                                <Button
+                                    className="w-full mt-4"
+                                    onClick={() => storeConnection()}
+                                >
+                                    Deploy Widget
+                                </Button>
+                            ) : (
                                 <Button
                                     className="w-full mt-4"
                                     onClick={() => {
-                                        setShowEmbed(true);
-                                        setBotStatus("published");
-                                    }   }
+                                        updateConnection();
+                                    }}
                                 >
-                                    Update Widget   </Button>
+                                    Update Widget{" "}
+                                </Button>
                             )}
                         </div>
                         {/* Live Preview */}
@@ -945,6 +1055,7 @@ const LaunchAgent = () => {
                                 position={position}
                                 color={color}
                                 logoUrl={logoUrl}
+                                widgetId={widgetId}
                                 avatarUrl={avatarUrl}
                                 buttonIconUrl={buttonIconUrl}
                                 welcomeMessage={welcomeMessage}

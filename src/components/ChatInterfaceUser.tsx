@@ -278,7 +278,7 @@ const ChatInterfaceUser = ({
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Type your message..."
-                        className="min-h-12 resize-none bg-card"
+                        className="min-h-12 resize-none bg-white dark:bg-main-dark text-black dark:text-white"
                         disabled={loading}
                         onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {

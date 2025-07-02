@@ -4,6 +4,7 @@ import ChatInterfaceUser from "@/components/ChatInterfaceUser";
 import { toast } from "sonner";
 import { useLoading } from "@/contexts/LoadingContext";
 import { useWidgets } from "@/hooks/useWidgets";
+import { useRouter } from "next/router";
 interface Message {
     id: string;
     content: string;
@@ -11,6 +12,12 @@ interface Message {
     timestamp: Date;
 }
 const Widget = () => {
+
+
+    // get param id from url
+    const router = useRouter();
+    const { botId } = router.query;
+
     const { setLoading } = useLoading();
     const [loading, setLoadingState] = useState(true);
 
@@ -35,7 +42,8 @@ const Widget = () => {
 
     useEffect(() => {
         setLoading(true);
-        findWidgetById("4a216f72-0cdf-4a13-b407-04ed9aac739f").then(
+        const widgetId = Array.isArray(botId) ? botId[0] : (botId ?? "");
+        findWidgetById(widgetId).then(
             (widget) => {
                 if (widget) {
                     setSelectedBot(widget.bots.id);
