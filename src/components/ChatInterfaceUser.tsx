@@ -81,6 +81,7 @@ const ChatInterfaceUser = ({
             sender: "user",
             timestamp: new Date(),
         };
+       
 
         setMessages((prev: any) => [...prev, userMessage]);
         setInput("");

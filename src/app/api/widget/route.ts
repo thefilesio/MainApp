@@ -10,7 +10,7 @@ export async function OPTIONS() {
     return new Response(null, {
         status: 204,
         headers: {
-            "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+            "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type",
         },
@@ -21,6 +21,7 @@ export async function OPTIONS() {
 export async function POST(req: Request) {
     try {
         const { botId, messages } = await req.json();
+
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.SUPABASE_SERVICE_ROLE_KEY! // only on server
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
             return new Response(JSON.stringify({ error: "Invalid input" }), {
                 status: 400,
                 headers: {
-                    "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                    "Access-Control-Allow-Origin": "*",
                 },
             });
         }
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
             return new Response(JSON.stringify({ error: "Bot not found" }), {
                 status: 404,
                 headers: {
-                    "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                    "Access-Control-Allow-Origin": "*",
                 },
             });
         }
@@ -85,7 +86,7 @@ export async function POST(req: Request) {
             return new Response(JSON.stringify({ error: "No API key found" }), {
                 status: 401,
                 headers: {
-                    "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                    "Access-Control-Allow-Origin": "*",
                 },
             });
         }
@@ -142,7 +143,7 @@ export async function POST(req: Request) {
         return new Response(JSON.stringify({ message: assistantMessage }), {
             status: 200,
             headers: {
-                "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                "Access-Control-Allow-Origin": "*",
             },
         });
     } catch (error: any) {
@@ -152,7 +153,7 @@ export async function POST(req: Request) {
             {
                 status: 500,
                 headers: {
-                    "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                    "Access-Control-Allow-Origin": "*",
                 },
             }
         );

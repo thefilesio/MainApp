@@ -33,18 +33,20 @@ const Widget = () => {
             timestamp: new Date(),
         },
     ]);
+    const [widgetId, setWidgetId] = useState<string | null>(
+        botId?.toString() || null
+    );
     const [isDarkMode, setIsDarkMode] = useState(true);
     const [promptText, setPromptText] = useState("");
-    const [prompts, setPrompts] = useState<any[]>([]); // Height of the chat interface
     const { findWidgetById } = useWidgets();
 
     useEffect(() => {
         setLoading(true);
-        const widgetId = Array.isArray(botId) ? botId[0] : botId ?? "";
+    
         if (widgetId) {
             findWidgetById(widgetId).then((widget) => {
                 if (widget) {
-                    setSelectedBot(widget.bots.id);
+                    setSelectedBot(widget.bot_id);
                     setDemoName(widget.bots.name);
                     setThemeColor(widget.color);
                     setAvatarUrl(widget.avatar_url);
@@ -60,21 +62,20 @@ const Widget = () => {
                             timestamp: new Date(),
                         },
                     ]);
-                    setPrompts(
-                        widget.bots.latest_version.prompt_snapshot || []
-                    );
-                    loadPromptContent();
-                    setLoading(false);
-                    setLoadingState(false);
+                 
+                    loadPromptContent(widget.bots.latest_version.prompt_snapshot || []).then(() => {
+                        setLoading(false);
+                        setLoadingState(false);
+                    });
                 } else {
                     console.error("Widget not found");
                 }
             });
         }
-    }, []);
+    }, [widgetId]);
 
-    const loadPromptContent = async () => {
-        if (selectedBot) {
+    const loadPromptContent = async (prompts) => {
+       
             try {
                 const step1 = prompts.find((p) => p.step === 1);
                 const step2 = prompts.find((p) => p.step === 2);
@@ -100,11 +101,11 @@ const Widget = () => {
                         console.log("Error parsing step 2 content:", error);
                     }
                 }
+                // console.log("Combined prompt content:", combinedContent);
                 setPromptText(combinedContent);
             } catch (error) {
                 console.error("Error loading prompt content:", error);
             }
-        }
     };
 
     return (

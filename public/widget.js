@@ -1,6 +1,6 @@
 // public/widget.js
 (function () {
-    const loadWidget = async ( widgetId, webUrl ) => {
+    const loadWidget = async (widgetId, webUrl) => {
         if (!widgetId) {
             console.error("No widgetId provided");
             return;
@@ -29,34 +29,37 @@
                             "No config found for widget ID: " + widgetId
                         );
                     }
-                    const config = {
-                        color: conf?.widget?.color || "#4A90E2", // Default color
-                        position: conf?.widget?.position || "bottom-right", // Default position
-                        width: conf?.widget?.width || 400, // Default width
-                        height: conf?.widget?.height || 600, // Default height
-                        buttonIconUrl: conf?.widget?.icon_url, // Default icon URL
-                        bubbleSize: conf?.widget?.bubble_size || "56", // Default bubble size
-                    };
+                    console.log("[AI Widget] Loaded config:", widgetId);
+                    // Check if the widgetId is valid
+                    if (widgetId) {
+                        const config = {
+                            color: conf?.widget?.color || "#4A90E2", // Default color
+                            position: conf?.widget?.position || "bottom-right", // Default position
+                            width: conf?.widget?.width || 400, // Default width
+                            height: conf?.widget?.height || 600, // Default height
+                            buttonIconUrl: conf?.widget?.icon_url, // Default icon URL
+                            bubbleSize: conf?.widget?.bubble_size || "56", // Default bubble size
+                        };
 
-                    const container = document.createElement("div");
-                    container.id = "chatbot-widget";
-                    document.body.appendChild(container);
+                        const container = document.createElement("div");
+                        container.id = "chatbot-widget";
+                        document.body.appendChild(container);
 
-                    const iframe = document.createElement("iframe");
-                    iframe.id = "chatbot-iframe";
-                    iframe.style.display = "none"; // Initially hidden
-                    iframe.src = `${webUrl}/widget/${widgetId}`;
-                    container.appendChild(iframe);
-                    // animate the iframe when it is displayed
-                    iframe.style.transition = "transform 0.3s ease";
-                    iframe.addEventListener("load", () => {
-                        iframe.style.transform = "translateY(0)";
-                    });
-                    iframe.style.transform = "translateY(20px)";
-                    // after iframe is loaded, set the display to block
-                    iframe.onload = () => {
-                        const style = document.createElement("style");
-                        style.innerHTML = `
+                        const iframe = document.createElement("iframe");
+                        iframe.id = "chatbot-iframe";
+                        iframe.style.display = "none"; // Initially hidden
+                        iframe.src = `${webUrl}/widget/${widgetId}`;
+                        container.appendChild(iframe);
+                        // animate the iframe when it is displayed
+                        iframe.style.transition = "transform 0.3s ease";
+                        iframe.addEventListener("load", () => {
+                            iframe.style.transform = "translateY(0)";
+                        });
+                        iframe.style.transform = "translateY(20px)";
+                        // after iframe is loaded, set the display to block
+                        iframe.onload = () => {
+                            const style = document.createElement("style");
+                            style.innerHTML = `
           #chatbot-widget {
             position: fixed;
             ${
@@ -88,19 +91,19 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.25);
           }
         `;
-                        document.head.appendChild(style);
-                        const bubble = document.createElement("div");
-                        bubble.id = "chatbot-bubble";
-                        if (config.buttonIconUrl) {
-                            const icon = document.createElement("img");
-                            icon.src = config.buttonIconUrl;
-                            icon.style.width = "32px";
-                            icon.style.height = "32px";
-                            icon.style.borderRadius = "50%";
-                            icon.style.objectFit = "cover";
-                            bubble.appendChild(icon);
-                        } else {
-                            bubble.innerHTML = `<div>
+                            document.head.appendChild(style);
+                            const bubble = document.createElement("div");
+                            bubble.id = "chatbot-bubble";
+                            if (config.buttonIconUrl) {
+                                const icon = document.createElement("img");
+                                icon.src = config.buttonIconUrl;
+                                icon.style.width = "32px";
+                                icon.style.height = "32px";
+                                icon.style.borderRadius = "50%";
+                                icon.style.objectFit = "cover";
+                                bubble.appendChild(icon);
+                            } else {
+                                bubble.innerHTML = `<div>
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 width="28"
@@ -118,59 +121,61 @@
                                                 />
                                             </svg>
                                         </div>`;
-                        }
-                        container.appendChild(bubble);
-
-                        const closeButton = document.createElement("button");
-                        closeButton.innerHTML = "&times;";
-                        closeButton.style.position = "absolute";
-                        closeButton.style.top = "8px";
-                        closeButton.style.right = "8px";
-                        closeButton.style.fontSize = "32px";
-                        closeButton.style.background = "transparent";
-                        closeButton.style.border = "none";
-                        closeButton.style.display = "none"; // Initially hidden
-                        closeButton.style.color = "#fff";
-                        closeButton.style.cursor = "pointer";
-                        closeButton.addEventListener("click", () => {
-                            iframe.style.display = "none";
-                            bubble.style.display = "flex";
-                            closeButton.style.display = "none";
-                        });
-                        container.appendChild(closeButton);
-
-                        bubble.addEventListener("click", () => {
-                            console.log("Bubble clicked");
-                            if (firsClick) {
-                                firsClick = false;
-                                iframe.style.display = "block";
-                                bubble.style.display = "none";
-                                closeButton.style.display = "block";
-                            } else {
-                                iframe.style.display =
-                                    iframe.style.display === "none"
-                                        ? "block"
-                                        : "none";
-                                bubble.style.display =
-                                    iframe.style.display === "none"
-                                        ? "flex"
-                                        : "none";
-                                closeButton.style.display =
-                                    iframe.style.display === "none"
-                                        ? "none"
-                                        : "block";
                             }
-                        });
+                            container.appendChild(bubble);
 
-                        // add animation to the bubble
-                        bubble.style.transition = "transform 0.3s ease";
-                        bubble.addEventListener("mouseover", () => {
-                            bubble.style.transform = "scale(1.1)";
-                        });
-                        bubble.addEventListener("mouseout", () => {
-                            bubble.style.transform = "scale(1)";
-                        });
-                    };
+                            const closeButton =
+                                document.createElement("button");
+                            closeButton.innerHTML = "&times;";
+                            closeButton.style.position = "absolute";
+                            closeButton.style.top = "8px";
+                            closeButton.style.right = "8px";
+                            closeButton.style.fontSize = "32px";
+                            closeButton.style.background = "transparent";
+                            closeButton.style.border = "none";
+                            closeButton.style.display = "none"; // Initially hidden
+                            closeButton.style.color = "#fff";
+                            closeButton.style.cursor = "pointer";
+                            closeButton.addEventListener("click", () => {
+                                iframe.style.display = "none";
+                                bubble.style.display = "flex";
+                                closeButton.style.display = "none";
+                            });
+                            container.appendChild(closeButton);
+
+                            bubble.addEventListener("click", () => {
+                                console.log("Bubble clicked");
+                                if (firsClick) {
+                                    firsClick = false;
+                                    iframe.style.display = "block";
+                                    bubble.style.display = "none";
+                                    closeButton.style.display = "block";
+                                } else {
+                                    iframe.style.display =
+                                        iframe.style.display === "none"
+                                            ? "block"
+                                            : "none";
+                                    bubble.style.display =
+                                        iframe.style.display === "none"
+                                            ? "flex"
+                                            : "none";
+                                    closeButton.style.display =
+                                        iframe.style.display === "none"
+                                            ? "none"
+                                            : "block";
+                                }
+                            });
+
+                            // add animation to the bubble
+                            bubble.style.transition = "transform 0.3s ease";
+                            bubble.addEventListener("mouseover", () => {
+                                bubble.style.transform = "scale(1.1)";
+                            });
+                            bubble.addEventListener("mouseout", () => {
+                                bubble.style.transform = "scale(1)";
+                            });
+                        };
+                    }
 
                     // Create the widget container and iframe
                 })

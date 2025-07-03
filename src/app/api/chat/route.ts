@@ -10,7 +10,7 @@ export async function OPTIONS() {
     return new Response(null, {
         status: 204,
         headers: {
-            "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+            "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type",
         },
@@ -21,6 +21,7 @@ export async function OPTIONS() {
 export async function POST(req: Request) {  
     try {
         const { botId, messages, token } = await req.json(); 
+        console.log("Received request with botId:", botId, "and messages:", messages);
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // Tetap gunakan anon key sebagai base
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
             return new Response(JSON.stringify({ error: "Invalid input" }), {
                 status: 400,
                 headers: {
-                    "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                    "Access-Control-Allow-Origin": "*",
                 },
             });
         }
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
             return new Response(JSON.stringify({ error: "Bot not found" }), {
                 status: 404,
                 headers: {
-                    "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                    "Access-Control-Allow-Origin": "*",
                 },
             });
         }
@@ -93,7 +94,7 @@ export async function POST(req: Request) {
             return new Response(JSON.stringify({ error: "No API key found" }), {
                 status: 401,
                 headers: {
-                    "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                    "Access-Control-Allow-Origin": "*",
                 },
             });
         }
@@ -150,7 +151,7 @@ Tone: professional, friendly, concise.
         return new Response(JSON.stringify({ message: assistantMessage }), {
             status: 200,
             headers: {
-                "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                "Access-Control-Allow-Origin": "*",
             },
         });
     } catch (error: any) {
@@ -160,7 +161,7 @@ Tone: professional, friendly, concise.
             {
                 status: 500,
                 headers: {
-                    "Access-Control-Allow-Origin": "https://chat.thefiles.io",
+                    "Access-Control-Allow-Origin": "*",
                 },
             }
         );
