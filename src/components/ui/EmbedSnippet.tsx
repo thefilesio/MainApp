@@ -41,6 +41,8 @@ document.addEventListener("DOMContentLoaded", function () {
      widgetId: "${widgetId}",
      webUrl: "${WEB_URL}",        
     });
+});
+
 </script>`;
 
     const iframeSnippet = responsive

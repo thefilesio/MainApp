@@ -10,8 +10,8 @@ export async function OPTIONS() {
     return new Response(null, {
         status: 204,
         headers: {
-            "Access-Control-Allow-Origin": "https://app.thefiles.io",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type",
         },
     });
@@ -23,6 +23,9 @@ export async function GET(
     { params }: { params: { widgetId: string } }
 ) {
     try {
+
+        // allow all requests from all origins
+       
         const { widgetId } = params;
 
         const supabase = createClient(
@@ -40,7 +43,7 @@ export async function GET(
             return new Response(JSON.stringify({ error: "Widget not found" }), {
                 status: 404,
                 headers: {
-                    "Access-Control-Allow-Origin": "https://app.thefiles.io",
+                    "Access-Control-Allow-Origin": "*",
                 },
             });
         }
@@ -49,7 +52,7 @@ export async function GET(
             status: 200,
             headers: {
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "https://app.thefiles.io",
+                "Access-Control-Allow-Origin": "*",
             },
         });
     } catch (error: any) {
@@ -59,7 +62,7 @@ export async function GET(
             {
                 status: 500,
                 headers: {
-                    "Access-Control-Allow-Origin": "https://app.thefiles.io",
+                    "Access-Control-Allow-Origin": "*",
                 },
             }
         );
