@@ -12,8 +12,6 @@ interface Message {
     timestamp: Date;
 }
 const Widget = () => {
-
-
     // get param id from url
     const router = useRouter();
     const { botId } = router.query;
@@ -37,14 +35,14 @@ const Widget = () => {
     ]);
     const [isDarkMode, setIsDarkMode] = useState(true);
     const [promptText, setPromptText] = useState("");
-    const [prompts, setPrompts] = useState<any[]>([]);// Height of the chat interface
+    const [prompts, setPrompts] = useState<any[]>([]); // Height of the chat interface
     const { findWidgetById } = useWidgets();
 
     useEffect(() => {
         setLoading(true);
-        const widgetId = Array.isArray(botId) ? botId[0] : (botId ?? "");
-        findWidgetById(widgetId).then(
-            (widget) => {
+        const widgetId = Array.isArray(botId) ? botId[0] : botId ?? "";
+        if (widgetId) {
+            findWidgetById(widgetId).then((widget) => {
                 if (widget) {
                     setSelectedBot(widget.bots.id);
                     setDemoName(widget.bots.name);
@@ -71,8 +69,8 @@ const Widget = () => {
                 } else {
                     console.error("Widget not found");
                 }
-            }
-        );
+            });
+        }
     }, []);
 
     const loadPromptContent = async () => {
@@ -117,25 +115,26 @@ const Widget = () => {
                     width: "100%",
                     height: "100vh",
                     background: isDarkMode ? "#1a1a1a" : "#ffffff",
-                    color: "#ffffff"
+                    color: "#ffffff",
                 }}
             >
-             {!loading?   (<ChatInterfaceUser
-                    botName={demoName?.toString() || "Demo Bot"}
-                    title={titleChat?.toString() || "Chat Interface"}
-                    botId={selectedBot}
-                    chooseColor={themeColor?.toString() || "#3a9e91"}
-                    openingMessage={
-                        welcomeMessage?.toString() ||
-                        "Hello! How can I help you today?"
-                    }
-                    urlProfile={avatarUrl?.toString() || ""}
-                    messages={messages}
-                    setMessages={setMessages}
-                    className={`w-full h-full`}
-                    rules={promptText}
-                />)
-                : (
+                {!loading ? (
+                    <ChatInterfaceUser
+                        botName={demoName?.toString() || "Demo Bot"}
+                        title={titleChat?.toString() || "Chat Interface"}
+                        botId={selectedBot}
+                        chooseColor={themeColor?.toString() || "#3a9e91"}
+                        openingMessage={
+                            welcomeMessage?.toString() ||
+                            "Hello! How can I help you today?"
+                        }
+                        urlProfile={avatarUrl?.toString() || ""}
+                        messages={messages}
+                        setMessages={setMessages}
+                        className={`w-full h-full`}
+                        rules={promptText}
+                    />
+                ) : (
                     <div className="flex items-center justify-center w-full h-full">
                         <p className="text-lg text-gray-500">Loading...</p>
                     </div>
