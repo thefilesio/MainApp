@@ -14,17 +14,16 @@
     </head>
     <body>
         <div id="chat-root"></div>
-        <script src="https://app.thefiles.io/widget.js"></script>
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                // get params id from url
-                const urlParams = new URLSearchParams(window.location.search);
-                const botId = urlParams.get("widgetId") || "4a216f72-0cdf-4a13-b407-04ed9aac739f";
-                window.AIChatWidget.init({
-                    widgetId: botId,
-                      webUrl: "https://app.thefiles.io",
-                });
-            });
-        </script>
+        
+<!-- Chatbot Widget -->
+ <script src="https://app.thefiles.io/widget.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+   window.AIChatWidget.init({
+     widgetId: "f1d801fe-1dec-472e-a71e-f0083779d643",
+     webUrl: "https://app.thefiles.io",        
+    });
+});
+</script>
     </body>
 </html>
