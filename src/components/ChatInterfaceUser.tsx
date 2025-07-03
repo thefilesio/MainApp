@@ -123,7 +123,6 @@ const ChatInterfaceUser = ({
                     console.error("Error parsing JSON:", error);
                 }
             }
-            console.log("Response data aja:", data);
             
 
             const botMessage: Message = {
@@ -147,7 +146,6 @@ const ChatInterfaceUser = ({
             setLoading(false);
             console.error("Error sending message:", err);
         } finally {
-            console.log("Messages after sending:", messages);
             setLoading(false);
         }
     };
