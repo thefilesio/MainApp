@@ -120,19 +120,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Attempt global sign out
       await supabase.auth.signOut({ scope: 'global' });
       
-      toast({
-        title: "Signed out",
-        description: "You have been signed out successfully.",
-      });
+      toast.error("You have been signed out. Please log in again.");
       
       // Force page reload for a clean state
       window.location.href = '/auth';
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to sign out",
-        variant: "destructive",
-      });
+      toast.error("Failed to sign out. Please try again.");
     } finally {
       setLoading(false);
     }
