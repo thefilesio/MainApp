@@ -9,7 +9,7 @@
             // const response = await fetch(`${webUrl}/api/widget/${widgetId}`);
             // const config = await response.json();
             let firsClick = true;
-            if (!widgetId) {
+            if (!widgetId || widgetId === "") {
                 console.error("No widgetId provided");
                 return;
             }
@@ -24,13 +24,11 @@
                     return response.json();
                 })
                 .then((conf) => {
-                    console.log("[AI Widget] Config loaded:", conf.widget);
                     if (!conf) {
                         throw new Error(
                             "No config found for widget ID: " + widgetId
                         );
                     }
-                    console.log("[AI Widget] Config:", conf);
                     const config = {
                         color: conf?.widget?.color || "#4A90E2", // Default color
                         position: conf?.widget?.position || "bottom-right", // Default position

@@ -27,6 +27,15 @@ export async function GET(
         // allow all requests from all origins
        
         const { widgetId } = params;
+        
+        if (!widgetId) {
+            return new Response(JSON.stringify({ error: "Widget ID is required" }), {
+                status: 400,
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                },
+            });
+        }
 
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
