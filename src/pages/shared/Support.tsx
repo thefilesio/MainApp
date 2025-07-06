@@ -79,7 +79,7 @@ const Support = () => {
                     <h2 className="chatbot-subheading font-extrabold mb-6">
                         Contact Us
                     </h2>
-                    <Card style={{ borderRadius: "8px" }}>
+                    <Card style={{ borderRadius: "8px" }} className="bg-white dark:bg-main-dark dark:text-white">
                         <CardHeader>
                             <CardTitle>Send a Message</CardTitle>
                             <CardDescription>

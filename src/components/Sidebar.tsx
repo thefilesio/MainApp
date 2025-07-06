@@ -166,12 +166,12 @@ const Sidebar = ({ onClose, translatedLinks }: SidebarProps) => {
             <div
               key={item.path}
               className={cn(
-                "flex items-center gap-3 pl-6 pr-2 py-3 rounded-xl font-semibold text-primary bg-[#d9f4f0] shadow-sm transition-all",
+                "flex items-center gap-3 pl-6 pr-2 py-3 rounded-xl font-semibold text-white bg-primary dark:bg-black shadow-sm transition-all",
                 "text-[15px] h-12"
               )}
             >
               {item.icon && (
-                <span className="text-primary">{item.icon}</span>
+                <span className="text-white dark:text-primary">{item.icon}</span>
               )}
               <span>{item.name}</span>
             </div>
