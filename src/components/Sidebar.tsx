@@ -85,7 +85,7 @@ const Sidebar = ({ onClose, translatedLinks }: SidebarProps) => {
       name: translatedLinks.launchAgent,
       path: "/launch",
       icon: <Rocket className="h-6 w-6" />,
-    },
+    }
   ];
 
   const settingsNavItems = [

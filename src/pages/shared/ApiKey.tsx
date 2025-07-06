@@ -30,10 +30,23 @@ const ApiKey = () => {
   return (
     <div>
       <h1 className="chatbot-heading mb-8">API Key Management</h1>
-      <div className="max-w-4xl mx-auto">
-        <Card>
+      <div className="max-w-4xl mx-auto
+        p-6 bg-white dark:bg-gray-900 rounded-lg shadow-md
+        border border-gray-200 dark:border-gray-700
+        "
+        
+        >
+
+        <Card
+ 
+       style={{ borderRadius: "8px" }}
+        className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300
+        border border-gray-200 dark:bg-gray-800 dark:border-gray-700
+        p-6
+        "
+        >
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 mb-4">
               <Key className="h-5 w-5" /> OpenAI API Key
             </CardTitle>
             <CardDescription>
