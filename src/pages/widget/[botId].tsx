@@ -25,6 +25,9 @@ const Widget = () => {
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
     const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
     const [titleChat, setTitleChat] = useState<string | null>("Chat Interface");
+    const [popupText, setPopupText] = useState("Ask me anything!");
+    const [isPopupVisible, setIsPopupVisible] = useState(true);
+    const [logoIconURL, setLogoIconURL] = useState<string | null>();
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "welcome-message",
@@ -42,7 +45,7 @@ const Widget = () => {
 
     useEffect(() => {
         setLoading(true);
-    
+
         if (widgetId) {
             findWidgetById(widgetId).then((widget) => {
                 if (widget) {
@@ -53,6 +56,8 @@ const Widget = () => {
                     setWelcomeMessage(widget.welcome_msg);
                     setTitleChat(widget.title);
                     setIsDarkMode(widget.theme === "dark");
+                    setLogoIconURL(widget.logo_url || null);
+                    setPopupText(widget.popup_text || "");
                     setMessages([
                         {
                             id: "welcome-message",
@@ -62,8 +67,10 @@ const Widget = () => {
                             timestamp: new Date(),
                         },
                     ]);
-                 
-                    loadPromptContent(widget.bots.latest_version.prompt_snapshot || []).then(() => {
+
+                    loadPromptContent(
+                        widget.bots.latest_version.prompt_snapshot || []
+                    ).then(() => {
                         setLoading(false);
                         setLoadingState(false);
                     });
@@ -75,37 +82,36 @@ const Widget = () => {
     }, [widgetId]);
 
     const loadPromptContent = async (prompts) => {
-       
-            try {
-                const step1 = prompts.find((p) => p.step === 1);
-                const step2 = prompts.find((p) => p.step === 2);
-                let combinedContent = "";
-                if (step1) {
-                    const content = JSON.parse(step1!.content || "{}");
+        try {
+            const step1 = prompts.find((p) => p.step === 1);
+            const step2 = prompts.find((p) => p.step === 2);
+            let combinedContent = "";
+            if (step1) {
+                const content = JSON.parse(step1!.content || "{}");
 
-                    combinedContent = `~Personality\n${
-                        content!.personality || ""
-                    }\n~Personality\n\n~Purpose\n${
-                        content!.purpose || ""
-                    }\n~Purpose\n\n~Tone\n${content!.tone || ""}\n~Tone\n\n`;
-                }
-
-                if (step2) {
-                    try {
-                        const content2 = JSON.parse(step2!.content || "{}");
-
-                        combinedContent += `\n\n~Rules\n${
-                            content2!.rules
-                        }\n~Rules\n\n~FAQ\n${content2!.faq}\n~FAQ\n`;
-                    } catch (error) {
-                        console.log("Error parsing step 2 content:", error);
-                    }
-                }
-                // console.log("Combined prompt content:", combinedContent);
-                setPromptText(combinedContent);
-            } catch (error) {
-                console.error("Error loading prompt content:", error);
+                combinedContent = `~Personality\n${
+                    content!.personality || ""
+                }\n~Personality\n\n~Purpose\n${
+                    content!.purpose || ""
+                }\n~Purpose\n\n~Tone\n${content!.tone || ""}\n~Tone\n\n`;
             }
+
+            if (step2) {
+                try {
+                    const content2 = JSON.parse(step2!.content || "{}");
+
+                    combinedContent += `\n\n~Rules\n${
+                        content2!.rules
+                    }\n~Rules\n\n~FAQ\n${content2!.faq}\n~FAQ\n`;
+                } catch (error) {
+                    console.log("Error parsing step 2 content:", error);
+                }
+            }
+            // console.log("Combined prompt content:", combinedContent);
+            setPromptText(combinedContent);
+        } catch (error) {
+            console.error("Error loading prompt content:", error);
+        }
     };
 
     return (
@@ -132,6 +138,7 @@ const Widget = () => {
                         urlProfile={avatarUrl?.toString() || ""}
                         messages={messages}
                         setMessages={setMessages}
+                        logoIconURL={logoIconURL?.toString() || ""}
                         className={`w-full h-full`}
                         rules={promptText}
                     />

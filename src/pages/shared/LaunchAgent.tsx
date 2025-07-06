@@ -103,6 +103,9 @@ const LaunchAgent = () => {
     const [showEmbed, setShowEmbed] = useState(false);
 
     const [previewTheme, setPreviewTheme] = useState<"dark" | "light">("dark");
+    const [popupText, setPopupText] = useState("Ask me anything!");
+    const [isPopupVisible, setIsPopupVisible] = useState(true);
+
     const [bubbleSize, setBubbleSize] = useState(56);
     const [open, setOpen] = useState(false);
     const { prompts } = usePrompts(selectedBot);
@@ -178,7 +181,7 @@ const LaunchAgent = () => {
             bubble_size: bubbleSize,
             width: Number(widgetWidth),
             height: Number(widgetHeight),
-            popup_text: "",
+            popup_text: popupText,
             popup_delay: null,
         };
 
@@ -207,7 +210,7 @@ const LaunchAgent = () => {
             toast.error("You must be logged in to create a widget.");
             return;
         }
-        
+
         const widgetData = {
             bot_id: selectedBot,
             user_id: user.id,
@@ -222,10 +225,9 @@ const LaunchAgent = () => {
             bubble_size: bubbleSize,
             width: Number(widgetSetup.width),
             height: Number(widgetSetup.height),
-            popup_text: "",
+            popup_text: popupText,
             popup_delay: null,
         };
-        console.log("Updating widget with data:", widgetData);
 
         const { data, error } = await supabase
             .from("widgets")
@@ -254,11 +256,17 @@ const LaunchAgent = () => {
         setWelcomeMessage("Hi there! How can I help you today?");
         setWidgetWidth("400");
         setWidgetHeight("500");
+        setWidgetSetup({
+            width: 400,
+            height: 500,
+        });
+        setLogoUrl("");
         setPosition("bottom-right");
 
         setColor("#3a9e91");
         setBubbleSize(56);
         setPreviewTheme("dark");
+        setPopupText("Ask me anything!");
         setOpen(false);
         setMessages([
             {
@@ -274,6 +282,7 @@ const LaunchAgent = () => {
         setSelectedIntegration(null);
         setConnectionName("");
         setShowEmbed(false);
+        setIsPopupVisible(true);
         setBotStatus("draft");
     };
 
@@ -304,8 +313,10 @@ const LaunchAgent = () => {
         setBubbleSize(connection.bubbleSize || 56);
         setWidgetTitle(connection.name);
         setConnectionName(connection.name);
+        setPopupText(connection.popupText || "");
         setBotStatus("published");
         setShowEmbed(true);
+        setIsPopupVisible(true);
         setIsWidgetEditorOpen(true);
     };
 
@@ -342,6 +353,7 @@ const LaunchAgent = () => {
                         width: widget.width,
                         height: widget.height,
                         position: widget.position,
+                        popupText: widget.popup_text || "",
                         theme: widget.theme,
                         color: widget.color,
                         enabled: true,
@@ -376,6 +388,7 @@ const LaunchAgent = () => {
                         width: widget.width,
                         height: widget.height,
                         position: widget.position,
+                        popupText: widget.popup_text || "",
                         theme: widget.theme,
                         color: widget.color,
                         enabled: true,
@@ -484,14 +497,13 @@ const LaunchAgent = () => {
                         {connections.map((conn, idx) => (
                             <div
                                 key={conn.id}
-                                
                                 className="flex items-center cursor-pointer justify-between bg-card p-4 rounded shadow dark:bg-main-dark border dark:border-[#22304a] "
                             >
-                                <div 
-                                onClick={() => {
-                                    handleEditConnection(conn);
-                                }}
-                                className="flex-1  mr-4"
+                                <div
+                                    onClick={() => {
+                                        handleEditConnection(conn);
+                                    }}
+                                    className="flex-1  mr-4"
                                 >
                                     <div className="font-medium">
                                         {conn.name}
@@ -716,9 +728,88 @@ const LaunchAgent = () => {
             </Dialog>
 
             {/* Widget Editor Modal */}
+            <style>{`
+                .chat-popup-bubble {
+                    position: relative;
+                    padding: 10px 16px;
+                    padding-right: 36px; /* Beri ruang untuk tombol close */
+                    background: #ffffff;
+                    border-radius: 12px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                    color: #1f2937; /* Teks lebih gelap untuk kontras */
+                    font-size: 14px;
+                    max-width: 240px;
+                    line-height: 1.4;
+                }
+
+                .chat-popup-bubble-dark {
+                    background: #374151; /* Warna dark mode yang lebih baik */
+                    color: #f3f4f6;
+                }
+
+                /* CSS untuk membuat "ekor" atau bagian lancip */
+                .chat-popup-bubble::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -8px; /* Posisi ekor di bawah bubble */
+                    width: 0;
+                    height: 0;
+                    border-style: solid;
+                }
+
+                /* Posisi ekor untuk widget di kanan */
+                .chat-popup-bubble.pos-right::after {
+                    right: 20px;
+                    border-width: 8px 8px 0 8px;
+                    border-color: #ffffff transparent transparent transparent;
+                }
+
+                /* Posisi ekor untuk widget di kiri */
+                .chat-popup-bubble.pos-left::after {
+                    left: 20px;
+                    border-width: 8px 8px 0 8px;
+                    border-color: #ffffff transparent transparent transparent;
+                }
+
+                /* Warna ekor untuk mode gelap */
+                .chat-popup-bubble-dark.pos-right::after,
+                .chat-popup-bubble-dark.pos-left::after {
+                    border-color: #374151 transparent transparent transparent;
+                }
+
+                /* Tombol Close (X) */
+                .popup-close-btn {
+                    position: absolute;
+                    top: 50%;
+                    right: 8px;
+                    transform: translateY(-50%);
+                    background: transparent;
+                    border: none;
+                    color: #9ca3af; /* Abu-abu */
+                    cursor: pointer;
+                    font-size: 24px;
+                    padding: 0;
+                    line-height: 1;
+                    font-weight: bold;
+                }
+                .popup-close-btn:hover {
+                    color: #1f2937; /* Hitam saat hover */
+                }
+                .chat-popup-bubble-dark .popup-close-btn {
+                    color: #9ca3af;
+                }
+                .chat-popup-bubble-dark .popup-close-btn:hover {
+                    color: #ffffff;
+                }
+            `}</style>
             <Dialog
                 open={isWidgetEditorOpen}
-                onOpenChange={setIsWidgetEditorOpen}
+                onOpenChange={(open) => {
+                    setIsWidgetEditorOpen(open);
+                    if (open) {
+                        setIsPopupVisible(true); // Selalu reset visibilitas saat modal dibuka
+                    }
+                }}
             >
                 <DialogContent
                     style={{ maxWidth: "90vw", maxHeight: "90vh" }}
@@ -819,6 +910,20 @@ const LaunchAgent = () => {
                                         setWelcomeMessage(e.target.value)
                                     }
                                 />
+                            </div>
+                            <div>
+                                <Label>Popup Text Above Bubble</Label>
+                                <Input
+                                    value={popupText}
+                                    onChange={(e) =>
+                                        setPopupText(e.target.value)
+                                    }
+                                    placeholder="Any questions?"
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Appears above the chat bubble before it's
+                                    opened.
+                                </p>
                             </div>
                             <div className="flex gap-4">
                                 <div>
@@ -935,7 +1040,6 @@ const LaunchAgent = () => {
                                     backgroundColor: "#000",
                                 }}
                             >
-                                {/* Bubble Button */}
                                 <div
                                     style={{
                                         position: "absolute",
@@ -944,48 +1048,88 @@ const LaunchAgent = () => {
                                         [position === "bottom-left"
                                             ? "left"
                                             : "right"]: 24,
-                                        width: bubbleSize + "px",
-                                        height: bubbleSize + "px",
-                                        borderRadius: "50%",
-                                        background: color,
                                         display: openChat ? "none" : "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        boxShadow:
-                                            "0 4px 12px rgba(0,0,0,0.15)",
-                                        cursor: "pointer",
+                                        flexDirection: "column",
+                                        alignItems:
+                                            position === "bottom-left"
+                                                ? "flex-start"
+                                                : "flex-end",
                                     }}
-                                    onClick={() => setOpenChat(true)}
                                 >
-                                    {logoUrl ? (
-                                        <img
-                                            src={logoUrl}
-                                            alt="Chat"
-                                            style={{
-                                                width: bubbleSize * 0.5 + "px",
-                                                height: bubbleSize * 0.5 + "px",
-                                            }}
-                                        />
-                                    ) : (
-                                        <div>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width={bubbleSize * 0.5}
-                                                height={bubbleSize * 0.5}
-                                                viewBox="0 0 24 24"
-                                                fill={"#ffff"}
-                                                stroke="#001A72"
+                                    {isPopupVisible && popupText && (
+                                        <div
+                                            className={cn(
+                                                "chat-popup-bubble",
+                                                position === "bottom-right"
+                                                    ? "pos-right"
+                                                    : "pos-left",
+                                                previewTheme === "dark" &&
+                                                    "chat-popup-bubble-dark"
+                                            )}
+                                            style={{ marginBottom: "16px" }} // Jarak antara pop-up dan bubble
+                                        >
+                                            {popupText}
+                                            <button
+                                                className="popup-close-btn"
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); // Mencegah bubble ikut ter-klik
+                                                    setIsPopupVisible(false);
+                                                }}
                                             >
-                                                <path
-                                                    d="M20 4H4V16H7V21L12 16H20V4Z"
-                                                    stroke="#001A72"
-                                                    stroke-width="1.5"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                />
-                                            </svg>
+                                                &times;
+                                            </button>
                                         </div>
                                     )}
+
+                                    {/* Bubble Button (tidak berubah, hanya posisinya relatif terhadap container baru) */}
+                                    <div
+                                        style={{
+                                            width: bubbleSize + "px",
+                                            height: bubbleSize + "px",
+                                            borderRadius: "50%",
+                                            background: color,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            boxShadow:
+                                                "0 4px 12px rgba(0,0,0,0.15)",
+                                            cursor: "pointer",
+                                        }}
+                                        onClick={() => setOpenChat(true)}
+                                    >
+                                        {/* ... (logika ikon di dalam bubble) ... */}
+                                        {buttonIconUrl ? (
+                                            <img
+                                                src={buttonIconUrl}
+                                                alt="Chat"
+                                                style={{
+                                                    width:
+                                                        bubbleSize * 0.5 + "px",
+                                                    height:
+                                                        bubbleSize * 0.5 + "px",
+                                                }}
+                                            />
+                                        ) : (
+                                            <div>
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width={bubbleSize * 0.5}
+                                                    height={bubbleSize * 0.5}
+                                                    viewBox="0 0 24 24"
+                                                    fill={"#ffff"}
+                                                    stroke="#001A72"
+                                                >
+                                                    <path
+                                                        d="M20 4H4V16H7V21L12 16H20V4Z"
+                                                        stroke="#001A72"
+                                                        stroke-width="1.5"
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 <AnimatePresence>
                                     {openChat && (
@@ -1016,9 +1160,10 @@ const LaunchAgent = () => {
                                         >
                                             <button
                                                 className="absolute top-3 right-5"
-                                                onClick={() =>
-                                                    setOpenChat(false)
-                                                }
+                                                onClick={() => {
+                                                    setOpenChat(false);
+                                                    setIsPopupVisible(true);
+                                                }}
                                                 style={{
                                                     color: "#fff",
                                                     background: "none",
@@ -1038,6 +1183,7 @@ const LaunchAgent = () => {
                                                 urlProfile={avatarUrl}
                                                 messages={messages}
                                                 setMessages={setMessages}
+                                                logoIconURL={logoUrl}
                                                 className="w-full h-full"
                                                 rules={promptText}
                                             />

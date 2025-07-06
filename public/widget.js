@@ -2,203 +2,235 @@
 (function () {
     const loadWidget = async (widgetId, webUrl) => {
         if (!widgetId) {
-            console.error("No widgetId provided");
+            console.error("[AI Widget] No widgetId provided");
             return;
         }
+
+        webUrl = webUrl || "https://app.thefiles.io";
+
         try {
-            // const response = await fetch(`${webUrl}/api/widget/${widgetId}`);
-            // const config = await response.json();
-            let firsClick = true;
-            if (!widgetId || widgetId === "") {
-                console.error("No widgetId provided");
-                return;
+            const response = await fetch(`${webUrl}/api/widget-client/${widgetId}`);
+            if (!response.ok) throw new Error("Network response was not ok");
+            
+            const conf = await response.json();
+            if (!conf || !conf.widget) throw new Error("No config found for widget ID: " + widgetId);
+
+            console.log("[AI Widget] Loaded config:", widgetId);
+            
+            const config = {
+                color: conf.widget.color || "#4A90E2",
+                position: conf.widget.position || "bottom-right",
+                width: conf.widget.width || 400,
+                height: conf.widget.height || 600,
+                buttonIconUrl: conf.widget.icon_url,
+                bubbleSize: conf.widget.bubble_size || 56,
+                popupText: conf.widget.popup_text || "",
+                theme: conf.widget.theme || "light",
+            };
+
+            // --- 1. Create main containers ---
+            const widgetContainer = document.createElement("div");
+            widgetContainer.id = "chatbot-widget";
+            document.body.appendChild(widgetContainer);
+
+            const iframe = document.createElement("iframe");
+            iframe.id = "chatbot-iframe";
+            iframe.src = `${webUrl}/widget/${widgetId}`;
+            widgetContainer.appendChild(iframe);
+
+            const triggerContainer = document.createElement("div");
+            triggerContainer.id = "chatbot-trigger-container";
+            widgetContainer.appendChild(triggerContainer);
+            
+            // --- 2. Create the main close button for the iframe ---
+            const iframeCloseBtn = document.createElement("button");
+            iframeCloseBtn.id = "chatbot-close-btn";
+            iframeCloseBtn.innerHTML = '&times;';
+            iframeCloseBtn.onclick = closeChat; // Assign close function
+            widgetContainer.appendChild(iframeCloseBtn);
+
+            // --- 3. Inject all necessary CSS ---
+            const style = document.createElement("style");
+            style.innerHTML = `
+                #chatbot-widget {
+                    position: fixed;
+                    ${config.position === "bottom-left" ? "left: 1.5rem;" : "right: 1.5rem;"}
+                    bottom: 1.5rem;
+                    z-index: 9999;
+                }
+                
+                #chatbot-trigger-container {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: ${config.position === 'bottom-left' ? 'flex-start' : 'flex-end'};
+                    gap: 12px;
+                }
+
+                #chatbot-bubble {
+                    width: ${config.bubbleSize}px;
+                    height: ${config.bubbleSize}px;
+                    border-radius: 50%;
+                    background-color: ${config.color};
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    transition: transform 0.2s ease;
+                }
+                #chatbot-bubble:hover {
+                    transform: scale(1.1);
+                }
+
+                #chatbot-iframe {
+                    width: ${config.width}px;
+                    height: ${config.height}px;
+                    max-height: calc(100vh - 4rem);
+                    border: none;
+                    border-radius: 16px;
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+                    overflow: hidden;
+                    display: none;
+                }
+
+                /* Style untuk tombol close utama iframe */
+                #chatbot-close-btn {
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    width: 30px;
+                    height: 30px;
+                    background-color: rgba(0, 0, 0, 0.3);
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    font-size: 20px;
+                    font-weight: bold;
+                    display: none; /* Initially hidden */
+                    justify-content: center;
+                    align-items: center;
+                    line-height: 1;
+                    z-index: 10000;
+                }
+                #chatbot-close-btn:hover {
+                    background-color: rgba(0, 0, 0, 0.5);
+                }
+                
+                .chat-popup-bubble {
+                    position: relative;
+                    padding: 10px 36px 10px 16px;
+                    background: ${config.theme === 'dark' ? '#374151' : '#ffffff'};
+                    color: ${config.theme === 'dark' ? '#f3f4f6' : '#1f2937'};
+                    border-radius: 12px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                    font-family: sans-serif;
+                    font-size: 14px;
+                    max-width: 240px;
+                    line-height: 1.4;
+                    cursor: pointer;
+                }
+                .chat-popup-bubble::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -8px;
+                    width: 0;
+                    height: 0;
+                    border-style: solid;
+                    border-width: 8px 8px 0 8px;
+                    border-color: ${config.theme === 'dark' ? '#374151' : '#ffffff'} transparent transparent transparent;
+                    ${config.position === 'bottom-left' ? 'left: 20px;' : 'right: 20px;'}
+                }
+
+                .popup-close-btn {
+                    position: absolute;
+                    top: 50%;
+                    right: 8px;
+                    transform: translateY(-50%);
+                    background: transparent;
+                    border: none;
+                    color: #9ca3af;
+                    cursor: pointer;
+                    font-size: 24px;
+                    padding: 0;
+                    line-height: 1;
+                    font-weight: bold;
+                }
+                .popup-close-btn:hover {
+                    color: ${config.theme === 'dark' ? '#ffffff' : '#1f2937'};
+                }
+            `;
+            document.head.appendChild(style);
+
+            // --- 4. Create Pop-up (if text exists) ---
+            if (config.popupText) {
+                const popup = document.createElement("div");
+                popup.className = "chat-popup-bubble";
+                popup.textContent = config.popupText;
+
+                const popupCloseBtn = document.createElement("button");
+                popupCloseBtn.className = 'popup-close-btn';
+                popupCloseBtn.innerHTML = '&times;';
+                popupCloseBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    popup.style.display = 'none';
+                };
+                
+                popup.appendChild(popupCloseBtn);
+                triggerContainer.appendChild(popup);
+                popup.addEventListener('click', openChat);
             }
-            if (!webUrl) {
-                webUrl = "https://app.thefiles.io";
+
+            // --- 5. Create Bubble Button ---
+            const bubble = document.createElement("div");
+            bubble.id = "chatbot-bubble";
+            if (config.buttonIconUrl) {
+                const icon = document.createElement("img");
+                icon.src = config.buttonIconUrl;
+                icon.style.width = "60%";
+                icon.style.height = "60%";
+                bubble.appendChild(icon);
+            } else {
+                bubble.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M20 4H4V16H7V21L12 16H20V4Z"/></svg>`;
             }
-            await fetch(`${webUrl}/api/widget-client/${widgetId}`)
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error("Network response was not ok");
-                    }
-                    return response.json();
-                })
-                .then((conf) => {
-                    if (!conf) {
-                        throw new Error(
-                            "No config found for widget ID: " + widgetId
-                        );
-                    }
-                    console.log("[AI Widget] Loaded config:", widgetId);
-                    // Check if the widgetId is valid
-                    if (widgetId) {
-                        const config = {
-                            color: conf?.widget?.color || "#4A90E2", // Default color
-                            position: conf?.widget?.position || "bottom-right", // Default position
-                            width: conf?.widget?.width || 400, // Default width
-                            height: conf?.widget?.height || 600, // Default height
-                            buttonIconUrl: conf?.widget?.icon_url, // Default icon URL
-                            bubbleSize: conf?.widget?.bubble_size || "56", // Default bubble size
-                        };
+            triggerContainer.appendChild(bubble);
+            bubble.addEventListener('click', openChat);
 
-                        const container = document.createElement("div");
-                        container.id = "chatbot-widget";
-                        document.body.appendChild(container);
-
-                        const iframe = document.createElement("iframe");
-                        iframe.id = "chatbot-iframe";
-                        iframe.style.display = "none"; // Initially hidden
-                        iframe.src = `${webUrl}/widget/${widgetId}`;
-                        container.appendChild(iframe);
-                        // animate the iframe when it is displayed
-                        iframe.style.transition = "transform 0.3s ease";
-                        iframe.addEventListener("load", () => {
-                            iframe.style.transform = "translateY(0)";
-                        });
-                        iframe.style.transform = "translateY(20px)";
-                        // after iframe is loaded, set the display to block
-                        iframe.onload = () => {
-                            const style = document.createElement("style");
-                            style.innerHTML = `
-          #chatbot-widget {
-            position: fixed;
-            ${
-                config.position === "bottom-left"
-                    ? "left: 1.5rem;"
-                    : "right: 1.5rem;"
+            // --- 6. Simplified open/close logic ---
+            function openChat() {
+                triggerContainer.style.display = 'none';
+                iframe.style.display = 'block';
+                iframeCloseBtn.style.display = 'flex'; // Show the close button
             }
-            bottom: 1.5rem;
-            z-index: 9999;
-          }
-          #chatbot-bubble {
-            width: ${config.bubbleSize}px;
-            height: ${config.bubbleSize}px;
-            border-radius: 50%;
-            background-color: ${config.color};
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          }
-          #chatbot-iframe {
-            display: none;
-            width: ${config.width}px;
-            height: ${config.height}px;
-            max-height: 80vh;
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-          }
-        `;
-                            document.head.appendChild(style);
-                            const bubble = document.createElement("div");
-                            bubble.id = "chatbot-bubble";
-                            if (config.buttonIconUrl) {
-                                const icon = document.createElement("img");
-                                icon.src = config.buttonIconUrl;
-                                icon.style.width = "32px";
-                                icon.style.height = "32px";
-                                icon.style.borderRadius = "50%";
-                                icon.style.objectFit = "cover";
-                                bubble.appendChild(icon);
-                            } else {
-                                bubble.innerHTML = `<div>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="28"
-                                                height="28"
-                                                viewBox="0 0 24 24"
-                                                fill="#fff"
-                                                stroke="none"
-                                            >
-                                                <path
-                                                    d="M20 4H4V16H7V21L12 16H20V4Z"
-                                                    stroke="#fff"
-                                                    stroke-width="1.5"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                />
-                                            </svg>
-                                        </div>`;
-                            }
-                            container.appendChild(bubble);
 
-                            const closeButton =
-                                document.createElement("button");
-                            closeButton.innerHTML = "&times;";
-                            closeButton.style.position = "absolute";
-                            closeButton.style.top = "8px";
-                            closeButton.style.right = "8px";
-                            closeButton.style.fontSize = "32px";
-                            closeButton.style.background = "transparent";
-                            closeButton.style.border = "none";
-                            closeButton.style.display = "none"; // Initially hidden
-                            closeButton.style.color = "#fff";
-                            closeButton.style.cursor = "pointer";
-                            closeButton.addEventListener("click", () => {
-                                iframe.style.display = "none";
-                                bubble.style.display = "flex";
-                                closeButton.style.display = "none";
-                            });
-                            container.appendChild(closeButton);
+            function closeChat() {
+                iframe.style.display = 'none';
+                iframeCloseBtn.style.display = 'none'; // Hide the close button
+                triggerContainer.style.display = 'flex';
+            }
 
-                            bubble.addEventListener("click", () => {
-                                console.log("Bubble clicked");
-                                if (firsClick) {
-                                    firsClick = false;
-                                    iframe.style.display = "block";
-                                    bubble.style.display = "none";
-                                    closeButton.style.display = "block";
-                                } else {
-                                    iframe.style.display =
-                                        iframe.style.display === "none"
-                                            ? "block"
-                                            : "none";
-                                    bubble.style.display =
-                                        iframe.style.display === "none"
-                                            ? "flex"
-                                            : "none";
-                                    closeButton.style.display =
-                                        iframe.style.display === "none"
-                                            ? "none"
-                                            : "block";
-                                }
-                            });
-
-                            // add animation to the bubble
-                            bubble.style.transition = "transform 0.3s ease";
-                            bubble.addEventListener("mouseover", () => {
-                                bubble.style.transform = "scale(1.1)";
-                            });
-                            bubble.addEventListener("mouseout", () => {
-                                bubble.style.transform = "scale(1)";
-                            });
-                        };
-                    }
-
-                    // Create the widget container and iframe
-                })
-                .catch((error) => {
-                    console.error(
-                        "[AI Widget] Error loading widget config:",
-                        error
-                    );
-                    // Fallback to default configuration if the fetch fails
-                });
         } catch (error) {
-            console.error("[AI Widget] Error loading widget config:", error);
+            console.error("[AI Widget] Error loading widget:", error);
         }
     };
 
     window.AIChatWidget = {
         init: ({ widgetId, webUrl }) => {
-            if (!widgetId) return console.error("No widgetId provided");
-            console.log(`[AI Widget] Initializing widget with ID: ${widgetId}`);
-            if (!webUrl) {
-                webUrl = "https://app.thefiles.io";
+            if (document.getElementById('chatbot-widget')) {
+                console.warn('[AI Widget] Widget already initialized.');
+                return;
             }
-            loadWidget(widgetId, webUrl);
+            if (!widgetId) {
+                console.error("[AI Widget] No widgetId provided for init");
+                return;
+            }
+            console.log(`[AI Widget] Initializing widget with ID: ${widgetId}`);
+            
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => loadWidget(widgetId, webUrl));
+            } else {
+                loadWidget(widgetId, webUrl);
+            }
         },
     };
 })();

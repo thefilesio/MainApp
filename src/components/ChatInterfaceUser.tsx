@@ -25,6 +25,7 @@ interface ChatInterfaceProps {
     urlProfile?: string; // Optional prop for user profile URL
     setMessages?: any; // Function to set messages, can be any type
     messages?: Message[]; // Initial messages to display
+    logoIconURL?: string; // URL for the bot's logo icon
 }
 
 const ChatInterfaceUser = ({
@@ -36,6 +37,7 @@ const ChatInterfaceUser = ({
     openingMessage,
     urlProfile,
     setMessages,
+    logoIconURL,
     messages = [
         {
             id: "welcome-message",
@@ -52,12 +54,11 @@ const ChatInterfaceUser = ({
     const [loading, setLoading] = useState(false);
     const bottomRef = useRef<HTMLDivElement | null>(null);
     const [close, setClose] = useState(false);
-    
+
     useEffect(() => {
         // Scroll ke elemen paling bawah saat render/mount
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     });
-    
 
     useEffect(() => {
         // Scroll ke elemen paling bawah saat ada perubahan pada messages
@@ -72,7 +73,7 @@ const ChatInterfaceUser = ({
                 variant: "destructive",
             });
             return;
-        }   
+        }
 
         // Add user message
         const userMessage: Message = {
@@ -81,7 +82,6 @@ const ChatInterfaceUser = ({
             sender: "user",
             timestamp: new Date(),
         };
-       
 
         setMessages((prev: any) => [...prev, userMessage]);
         setInput("");
@@ -124,7 +124,6 @@ const ChatInterfaceUser = ({
                     console.error("Error parsing JSON:", error);
                 }
             }
-            
 
             const botMessage: Message = {
                 id: `bot-${Date.now()}`,
@@ -164,7 +163,20 @@ const ChatInterfaceUser = ({
                 }
             `}</style>
             <div className="bg-muted/30 p-4  mainColor">
-                <h2 className="font-medium text-white">{title}</h2>
+                <div className="flex items-center mb-2">
+                    {logoIconURL && (
+                        <div className="mr-4">
+                            <div className="h-10 w-10">
+                                <img
+                                    src={logoIconURL}
+                                    alt={botName}
+                                    className="w-full h-full"
+                                />
+                            </div>
+                        </div>
+                    )}
+                    <h2 className="font-medium text-white">{title}</h2>
+                </div>
             </div>
 
             <ScrollArea className="flex-1 p-4">
@@ -205,7 +217,6 @@ const ChatInterfaceUser = ({
                                                     {botName.charAt(0)}
                                                 </div>
                                             )}
-                                            
                                         </Avatar>
                                         <span className="text-xs font-medium">
                                             {botName}
@@ -256,7 +267,7 @@ const ChatInterfaceUser = ({
                             </div>
                             <p className="bg-muted px-4 py-3 rounded-xl max-w-[80%]">
                                 <span className="animate-pulse text-muted-foreground">
-                                    Typing...
+                                    Typing...   
                                 </span>
                             </p>
                         </div>
@@ -268,7 +279,7 @@ const ChatInterfaceUser = ({
             <div className="p-4 border-t">
                 <form
                     onSubmit={(e) => {
-                        e.preventDefault();
+                        e.preventDefault(); 
                         handleSendMessage();
                     }}
                     className="flex items-center space-x-2"

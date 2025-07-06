@@ -27,6 +27,7 @@ interface ChatInterfaceProps {
     setMessages: any; // Function to set messages, can be any type
     messages?: Message[]; // Initial messages to display
     title?: string; // Title for the chat interface
+    logoIconURL?: string; // URL for the button icon
 }
 
 const ChatInterface = ({
@@ -39,6 +40,7 @@ const ChatInterface = ({
     urlProfile,
     title = "Chat Interface",
     setMessages,
+    logoIconURL,
     messages = [
         {
             id: "welcome-message",
@@ -73,7 +75,6 @@ const ChatInterface = ({
             chooseColor = bot.color || chooseColor; // Use bot's color if available
         }
     }
-    
 
     const key =
         apiKey && typeof apiKey === "object" && "openai_api_key" in apiKey
@@ -195,10 +196,23 @@ const ChatInterface = ({
                     background-color: ${chooseColor || "#4f46e5"} !important;
                 }
             `}</style>
-            <div className="bg-muted/30 p-4  mainColor">
-                <h2 className="font-medium text-white">{title}</h2>
-            </div>
 
+            <div className="bg-muted/30 p-4  mainColor">
+                <div className="flex items-center mb-2">
+                    {logoIconURL && (
+                        <div className="mr-4">
+                            <Avatar className="h-10 w-10">
+                                <img
+                                    src={logoIconURL}
+                                    alt={botName}
+                                    className="w-full h-full rounded-full"
+                                />
+                            </Avatar>
+                        </div>
+                    )}
+                    <h2 className="font-medium text-white">{title}</h2>
+                </div>
+            </div>
 
             <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4">
@@ -238,7 +252,6 @@ const ChatInterface = ({
                                                     {botName.charAt(0)}
                                                 </div>
                                             )}
-                                            
                                         </Avatar>
                                         <span className="text-xs font-medium">
                                             {botName}
