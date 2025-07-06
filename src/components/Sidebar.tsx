@@ -96,7 +96,7 @@ const Sidebar = ({ onClose, translatedLinks }: SidebarProps) => {
     },
     {
       name: translatedLinks.support,
-      path: "/support",
+      path: "/supports",
       icon: <HelpCircle className="h-6 w-6" />,
     },
   ];
