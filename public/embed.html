@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <title>Chat Widget</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      
+
         <style>
             body {
                 margin: 0;
@@ -13,17 +13,23 @@
         </style>
     </head>
     <body>
-        <div id="chat-root"></div>
-        
-<!-- Chatbot Widget -->
- <script src="http://localhost:3000/widget.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-   window.AIChatWidget.init({
-     widgetId: "c1b7f792-8463-409f-800b-27ff771fefdd",
-     webUrl: "http://localhost:3000",        
-    });
-});
-</script>
+        <div id="chat-root">
+            <div
+                id="chat-widget-container"
+                class="bg-main-dark"
+                style="width: 100%; height: 200vh; background-color: black"
+            ></div>
+        </div>
+
+        <!-- Chatbot Widget -->
+        <script src="https://app.thefiles.io/widget.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                window.AIChatWidget.init({
+                    widgetId: "4a1ebb6c-af9d-4024-bbab-64fabf47cd54",
+                    webUrl: "https://app.thefiles.io",
+                });
+            });
+        </script>
     </body>
 </html>
