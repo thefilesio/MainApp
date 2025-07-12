@@ -73,6 +73,7 @@ const LaunchAgent = () => {
     const [selectedBot, setSelectedBot] = useState<string>("");
     const [botName, setBotName] = useState<string>("");
     const [connectionName, setConnectionName] = useState("");
+    const [popupDelay, setPopupDelay] = useState(null);
 
     const [createConnection, setCreateConnection] = useState({
         name: "",
@@ -182,7 +183,7 @@ const LaunchAgent = () => {
             width: Number(widgetWidth),
             height: Number(widgetHeight),
             popup_text: popupText,
-            popup_delay: null,
+            popup_delay: popupDelay,
         };
 
         const { data, error } = await supabase
@@ -222,11 +223,11 @@ const LaunchAgent = () => {
             logo_url: logoUrl,
             icon_url: buttonIconUrl,
             position,
+            popup_delay: popupDelay,
             bubble_size: bubbleSize,
             width: Number(widgetSetup.width),
             height: Number(widgetSetup.height),
             popup_text: popupText,
-            popup_delay: null,
         };
 
         const { data, error } = await supabase
@@ -262,7 +263,7 @@ const LaunchAgent = () => {
         });
         setLogoUrl("");
         setPosition("bottom-right");
-
+        setPopupDelay(0);
         setColor("#3a9e91");
         setBubbleSize(56);
         setPreviewTheme("dark");
@@ -314,6 +315,7 @@ const LaunchAgent = () => {
         setWidgetTitle(connection.name);
         setConnectionName(connection.name);
         setPopupText(connection.popupText || "");
+        setPopupDelay(connection.popupDelay || 0);
         setBotStatus("published");
         setShowEmbed(true);
         setIsPopupVisible(true);
@@ -354,6 +356,7 @@ const LaunchAgent = () => {
                         height: widget.height,
                         position: widget.position,
                         popupText: widget.popup_text || "",
+                        popupDelay: widget.popup_delay || 0,
                         theme: widget.theme,
                         color: widget.color,
                         enabled: true,
@@ -391,6 +394,7 @@ const LaunchAgent = () => {
                         popupText: widget.popup_text || "",
                         theme: widget.theme,
                         color: widget.color,
+                        popupDelay: widget.popup_delay || 0,
                         enabled: true,
                     }))
                 );
@@ -1010,6 +1014,24 @@ const LaunchAgent = () => {
                                         setBubbleSize(Number(e.target.value))
                                     }
                                 />
+                            </div>
+
+
+                            <div>
+                                <Label>Popup Delay (ms)</Label>
+                                <Input
+                                    type="number"
+                                    min={0}
+                                    value={popupDelay}
+                                    onChange={(e) =>
+                                        setPopupDelay(e.target.value)
+                                    }
+                                  
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Delay before the popup appears after the chat
+                                    bubble is clicked.
+                                </p>
                             </div>
                             {botStatus === "draft" ? (
                                 <Button

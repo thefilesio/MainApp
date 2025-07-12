@@ -26,6 +26,7 @@
                 bubbleSize: conf.widget.bubble_size || 56,
                 popupText: conf.widget.popup_text || "",
                 theme: conf.widget.theme || "light",
+                popup_delay: conf.widget.popup_delay || 0, // --- BARU: Ambil nilai popup_delay, default 0
             };
 
             // --- 1. Create main containers ---
@@ -46,11 +47,12 @@
             const iframeCloseBtn = document.createElement("button");
             iframeCloseBtn.id = "chatbot-close-btn";
             iframeCloseBtn.innerHTML = '&times;';
-            iframeCloseBtn.onclick = closeChat; // Assign close function
+            iframeCloseBtn.onclick = closeChat;
             widgetContainer.appendChild(iframeCloseBtn);
 
             // --- 3. Inject all necessary CSS ---
             const style = document.createElement("style");
+            // ... (CSS tidak berubah)
             style.innerHTML = `
                 #chatbot-widget {
                     position: fixed;
@@ -60,7 +62,7 @@
                 }
                 
                 #chatbot-trigger-container {
-                    display: flex;
+                    display: flex; /* Diubah menjadi flex agar setTimeout bisa menampilkannya */
                     flex-direction: column;
                     align-items: ${config.position === 'bottom-left' ? 'flex-start' : 'flex-end'};
                     gap: 12px;
@@ -93,7 +95,6 @@
                     display: none;
                 }
 
-                /* Style untuk tombol close utama iframe */
                 #chatbot-close-btn {
                     position: absolute;
                     top: 10px;
@@ -107,7 +108,7 @@
                     cursor: pointer;
                     font-size: 20px;
                     font-weight: bold;
-                    display: none; /* Initially hidden */
+                    display: none;
                     justify-content: center;
                     align-items: center;
                     line-height: 1;
@@ -196,16 +197,30 @@
             triggerContainer.appendChild(bubble);
             bubble.addEventListener('click', openChat);
 
-            // --- 6. Simplified open/close logic ---
+            // --- BARU: 6. Handle initial visibility and delay ---
+            triggerContainer.style.display = 'none'; // Sembunyikan container pemicu secara default
+
+            if (config.popup_delay > 0) {
+                // Jika ada delay, gunakan setTimeout untuk menampilkannya
+                setTimeout(() => {
+                    triggerContainer.style.display = 'flex';
+                }, config.popup_delay * 1000); // Konversi detik ke milidetik
+            } else {
+                // Jika tidak ada delay, langsung tampilkan
+                triggerContainer.style.display = 'flex';
+            }
+
+
+            // --- 7. Simplified open/close logic ---
             function openChat() {
                 triggerContainer.style.display = 'none';
                 iframe.style.display = 'block';
-                iframeCloseBtn.style.display = 'flex'; // Show the close button
+                iframeCloseBtn.style.display = 'flex';
             }
 
             function closeChat() {
                 iframe.style.display = 'none';
-                iframeCloseBtn.style.display = 'none'; // Hide the close button
+                iframeCloseBtn.style.display = 'none';
                 triggerContainer.style.display = 'flex';
             }
 

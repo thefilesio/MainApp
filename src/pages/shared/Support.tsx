@@ -41,34 +41,34 @@ const Support = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!name || !email || !subject || !message) {
-            toast.error("Please fill out all fields.");
-            return;
-        }
-        setIsLoading(true);
+        // if (!name || !email || !subject || !message) {
+        //     toast.error("Please fill out all fields.");
+        //     return;
+        // }
+        // setIsLoading(true);
 
-        try {
-            // Panggil Edge Function 'create-ticket'
-            const { data, error } = await supabase.functions.invoke('create-ticket', {
-                body: { name, email, subject, message },
-            });
+        // try {
+        //     // Panggil Edge Function 'create-ticket'
+        //     const { data, error } = await supabase.functions.invoke('create-ticket', {
+        //         body: { name, email, subject, message },
+        //     });
 
-            if (error) {
-                throw error;
-            }
+        //     if (error) {
+        //         throw error;
+        //     }
 
-            toast.success("Message sent successfully! We'll get back to you soon.");
-            // Reset form
-            setName("");
-            setEmail("");
-            setSubject("");
-            setMessage("");
+        //     toast.success("Message sent successfully! We'll get back to you soon.");
+        //     // Reset form
+        //     setName("");
+        //     setEmail("");
+        //     setSubject("");
+        //     setMessage("");
 
-        } catch (error) {
-            toast.error(`Failed to send message: ${error.message}`);
-        } finally {
-            setIsLoading(false);
-        }
+        // } catch (error) {
+        //     toast.error(`Failed to send message: ${error.message}`);
+        // } finally {
+        //     setIsLoading(false);
+        // }
     };
 
     return (
