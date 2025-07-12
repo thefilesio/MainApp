@@ -100,7 +100,6 @@
                     height: ${config.height}px;
                     max-height: calc(100vh - 4rem);
                     border: none;
-                    border-radius: 16px;
                     box-shadow: 0 8px 24px rgba(0,0,0,0.25);
                     overflow: hidden;
                     display: none;
