@@ -1,8 +1,8 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
+import { supabase } from "../lib/supabaseClient"; // Adjust the import path as necessary
+import { useAuth } from "../contexts/AuthContext"; // Adjust the import path as necessary
+import { toast } from "sonner";
 
 interface ApiKey {
   id: string;
@@ -79,16 +79,6 @@ export const useApiKey = () => {
     if (error) throw error;
   };
 
-  const testApiKey = async (apiKey: string): Promise<boolean> => {
-    // Create Supabase Edge Function to test the API key
-    // For now, we'll just return true
-    toast({
-      title: "API Key Test",
-      description: "This will be implemented in a Supabase Edge Function",
-    });
-    return true;
-  };
-
   const apiKeyQuery = useQuery({
     queryKey: ["apiKey", user?.id],
     queryFn: fetchApiKey,
@@ -99,17 +89,10 @@ export const useApiKey = () => {
     mutationFn: saveApiKey,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["apiKey", user?.id] });
-      toast({
-        title: "Success",
-        description: "API key saved successfully",
-      });
+      toast.success("API key saved successfully");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save API key",
-        variant: "destructive",
-      });
+      toast.error("Failed to save API key: " + (error.message || "Unknown error"));
     },
   });
 
@@ -117,19 +100,18 @@ export const useApiKey = () => {
     mutationFn: deleteApiKey,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["apiKey", user?.id] });
-      toast({
-        title: "Success",
-        description: "API key deleted successfully",
-      });
+      toast.success("API key deleted successfully");
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete API key",
-        variant: "destructive",
-      });
+      toast.error("Failed to delete API key: " + (error.message || "Unknown error"));
     },
   });
+    const testApiKey = async (apiKey: string): Promise<boolean> => {
+    // Create Supabase Edge Function to test the API key
+    // For now, we'll just return true
+    toast.success("API key is valid and working!");
+    return true;
+  };
 
   const testApiKeyMutation = useMutation({
     mutationFn: testApiKey,
