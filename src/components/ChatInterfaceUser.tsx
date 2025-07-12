@@ -153,9 +153,11 @@ const ChatInterfaceUser = ({
     return (
         <div
             className={
-                "flex flex-col h-[600px]  border rounded-lg overflow-hidden bg-background " +
+                "flex flex-col h-[600px]  border  overflow-hidden bg-background " +
                 className
             }
+
+            style={{ borderRadius: "10px" }}
         >
             <style jsx>{`
                 .mainColor {

@@ -115,7 +115,9 @@ const Widget = () => {
     };
 
     return (
-        <CardContent className="p-0 m-0 flex items-end w-full h-full text-white">
+        <CardContent className="p-0 m-0 flex items-end w-full h-full text-white"
+        
+        >
             <div
                 style={{
                     position: "relative",
@@ -123,6 +125,7 @@ const Widget = () => {
                     height: "100vh",
                     background: isDarkMode ? "#1a1a1a" : "#ffffff",
                     color: "#ffffff",
+                    
                 }}
             >
                 {!loading ? (
