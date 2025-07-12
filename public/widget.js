@@ -199,6 +199,17 @@
                 popup.appendChild(popupCloseBtn);
                 triggerContainer.appendChild(popup);
                 popup.addEventListener("click", openChat);
+                popup.style.display = "none"; // Awalnya sembunyikan popup
+
+                if (config.popup_delay > 0) {
+                    // Jika ada delay, gunakan setTimeout untuk menampilkan popup
+                    setTimeout(() => {
+                        popup.style.display = "block";
+                    }, config.popup_delay * 1000); // Penting: dikali 1000 untuk konversi ke milidetik
+                } else {
+                    // Jika tidak ada delay, langsung tampilkan popup
+                    popup.style.display = "block";
+                }
             }
 
             // --- 5. Create Bubble Button ---
@@ -216,18 +227,7 @@
             triggerContainer.appendChild(bubble);
             bubble.addEventListener("click", openChat);
 
-            // --- BARU: 6. Handle initial visibility and delay ---
-            triggerContainer.style.display = "none"; // Sembunyikan container pemicu secara default
-            console.log("popup_delay:", config.popup_delay);
-            if (config.popup_delay > 0) {
-                // Jika ada delay, gunakan setTimeout untuk menampilkan popup
-                setTimeout(() => {
-                    popup.style.display = "block";
-                }, config.popup_delay * 1000); // Penting: dikali 1000 untuk konversi ke milidetik
-            } else {
-                // Jika tidak ada delay, langsung tampilkan popup
-                popup.style.display = "block";
-            }
+            triggerContainer.style.display = "flex";
 
             // --- 7. Simplified open/close logic ---
             function openChat() {
