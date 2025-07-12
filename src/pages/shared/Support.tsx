@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { EMAIL_ADDRESS, RESEND_API_KEY, supabase } from "@/lib/supabaseClient"; // Pastikan path ini benar
+import { supabase } from "@/lib/supabaseClient"; // Pastikan path ini benar
 import { toast } from "sonner"; // Saya asumsikan Anda menggunakan Sonner untuk notifikasi
 
 import {
@@ -49,44 +49,22 @@ const Support = () => {
 
         try {
             // Panggil Edge Function 'create-ticket'
-            const resendResponse = await fetch(
-                "https://api.resend.com/emails",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${RESEND_API_KEY}`,
-                    },
-                    body: JSON.stringify({
-                        from: "Support Ticket <info@thefiles.io>",
-                        to: [EMAIL_ADDRESS],
-                        subject: `New Ticket: ${subject}`,
-                        html: `
-          <h1>New Support Ticket Received</h1>
-          <p><strong>From:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <hr>
-          <h2>Message:</h2>
-          <p>${message}</p>
-        `,
-                        reply_to: email,
-                    }),
-                }
-            );
+            const payload = { name, email, subject, message };
+            const { data, error } = await supabase.functions.invoke('resend-email', {
+                body:JSON.stringify(payload),
+            });
 
-            if (!resendResponse.ok) {
-                throw new Error("Failed to send email");
+            if (error) {
+                throw error;
             }
 
-
-            toast.success(
-                "Message sent successfully! We'll get back to you soon."
-            );
+            toast.success("Message sent successfully! We'll get back to you soon.");
             // Reset form
             setName("");
             setEmail("");
             setSubject("");
             setMessage("");
+
         } catch (error) {
             console.error("Error sending message:", error);
             toast.error(`Failed to send message`);
@@ -136,10 +114,7 @@ const Support = () => {
                     <h2 className="chatbot-subheading font-extrabold mb-6">
                         Contact Us
                     </h2>
-                    <Card
-                        style={{ borderRadius: "8px" }}
-                        className="bg-white dark:bg-main-dark dark:text-white"
-                    >
+                    <Card style={{ borderRadius: "8px" }} className="bg-white dark:bg-main-dark dark:text-white">
                         <CardHeader>
                             <CardTitle>Send a Message</CardTitle>
                             <CardDescription>
@@ -151,82 +126,32 @@ const Support = () => {
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label
-                                            htmlFor="name"
-                                            className="text-sm font-medium"
-                                        >
+                                        <label htmlFor="name" className="text-sm font-medium">
                                             Name
                                         </label>
-                                        <Input
-                                            id="name"
-                                            placeholder="Your name"
-                                            value={name}
-                                            onChange={(e) =>
-                                                setName(e.target.value)
-                                            }
-                                            disabled={isLoading}
-                                        />
+                                        <Input id="name" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} disabled={isLoading} />
                                     </div>
                                     <div className="space-y-2">
-                                        <label
-                                            htmlFor="email"
-                                            className="text-sm font-medium"
-                                        >
+                                        <label htmlFor="email" className="text-sm font-medium">
                                             Email
                                         </label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            placeholder="Your email"
-                                            value={email}
-                                            onChange={(e) =>
-                                                setEmail(e.target.value)
-                                            }
-                                            disabled={isLoading}
-                                        />
+                                        <Input id="email" type="email" placeholder="Your email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isLoading} />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label
-                                        htmlFor="subject"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="subject" className="text-sm font-medium">
                                         Subject
                                     </label>
-                                    <Input
-                                        id="subject"
-                                        placeholder="What's this about?"
-                                        value={subject}
-                                        onChange={(e) =>
-                                            setSubject(e.target.value)
-                                        }
-                                        disabled={isLoading}
-                                    />
+                                    <Input id="subject" placeholder="What's this about?" value={subject} onChange={(e) => setSubject(e.target.value)} disabled={isLoading} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label
-                                        htmlFor="message"
-                                        className="text-sm font-medium"
-                                    >
+                                    <label htmlFor="message" className="text-sm font-medium">
                                         Message
                                     </label>
-                                    <Textarea
-                                        id="message"
-                                        placeholder="How can we help you?"
-                                        rows={4}
-                                        value={message}
-                                        onChange={(e) =>
-                                            setMessage(e.target.value)
-                                        }
-                                        disabled={isLoading}
-                                    />
+                                    <Textarea id="message" placeholder="How can we help you?" rows={4} value={message} onChange={(e) => setMessage(e.target.value)} disabled={isLoading} />
                                 </div>
-                                <Button
-                                    type="submit"
-                                    className="w-full"
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? "Sending..." : "Send Message"}
+                                <Button type="submit" className="w-full" disabled={isLoading}>
+                                    {isLoading ? 'Sending...' : 'Send Message'}
                                 </Button>
                             </form>
                         </CardContent>
