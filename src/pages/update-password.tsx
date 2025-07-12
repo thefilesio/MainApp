@@ -67,7 +67,7 @@ export default function ResetPassword() {
                 supabase.auth.signOut().then(() => {
                     setIsLoading(false);
 
-                    router.push("/auth/login");
+                    router.push("/auth");
                 });
             }, 2000);
         }
