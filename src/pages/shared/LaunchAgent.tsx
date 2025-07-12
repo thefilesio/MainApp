@@ -73,7 +73,7 @@ const LaunchAgent = () => {
     const [selectedBot, setSelectedBot] = useState<string>("");
     const [botName, setBotName] = useState<string>("");
     const [connectionName, setConnectionName] = useState("");
-    const [popupDelay, setPopupDelay] = useState(null);
+    const [popupDelay, setPopupDelay] = useState(0);
 
     const [createConnection, setCreateConnection] = useState({
         name: "",
@@ -1011,7 +1011,8 @@ const LaunchAgent = () => {
                                     max={120}
                                     value={bubbleSize}
                                     onChange={(e) =>
-                                        setBubbleSize(Number(e.target.value))
+                                       // remove 0 if bubbleSize is 0
+                                        setBubbleSize(Number(e.target.value) || 32)
                                     }
                                 />
                             </div>
@@ -1021,10 +1022,10 @@ const LaunchAgent = () => {
                                 <Label>Popup Delay (ms)</Label>
                                 <Input
                                     type="number"
-                                    min={0}
+                                    min={1}
                                     value={popupDelay}
                                     onChange={(e) =>
-                                        setPopupDelay(e.target.value)
+                                        setPopupDelay(Number(e.target.value) || 1)
                                     }
                                   
                                 />
