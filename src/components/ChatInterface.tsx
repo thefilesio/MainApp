@@ -215,7 +215,7 @@ const ChatInterface = ({
             </div>
 
             <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
+                <div className="space-y-4 ">
                     {messages.map((message) => (
                         <div
                             key={message.id}
@@ -323,7 +323,7 @@ const ChatInterface = ({
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Type your message..."
-                        className="min-h-12 resize-none bg-card text-white"
+                        className="min-h-12 resize-none bg-card dark:text-white text-black "
                         disabled={loading}
                         onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {
