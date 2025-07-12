@@ -26,7 +26,7 @@
                 bubbleSize: conf.widget.bubble_size || 56,
                 popupText: conf.widget.popup_text || "",
                 theme: conf.widget.theme || "light",
-                popup_delay: conf.widget.popup_delay || 0, // --- BARU: Ambil nilai popup_delay, default 0
+                popup_delay: conf.widget.popup_delay || 0,
             };
 
             // --- 1. Create main containers ---
@@ -199,12 +199,12 @@
 
             // --- BARU: 6. Handle initial visibility and delay ---
             triggerContainer.style.display = 'none'; // Sembunyikan container pemicu secara default
-
+            console.log("popup_delay:", config.popup_delay);
             if (config.popup_delay > 0) {
                 // Jika ada delay, gunakan setTimeout untuk menampilkannya
                 setTimeout(() => {
                     triggerContainer.style.display = 'flex';
-                }, config.popup_delay * 1000); // Konversi detik ke milidetik
+                }, config.popup_delay ); // Konversi detik ke milidetik
             } else {
                 // Jika tidak ada delay, langsung tampilkan
                 triggerContainer.style.display = 'flex';
