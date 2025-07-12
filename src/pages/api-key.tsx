@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
+import { toast } from "sonner";
 
 export default function ApiKeyPage() {
     const { apiKey, saveApiKey, deleteApiKey, testApiKey } =
@@ -26,26 +28,38 @@ export default function ApiKeyPage() {
         }
     }, [apiKey]);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!input || !input.startsWith("sk-")) {
-            setStatus("Invalid API key");
+            setStatus("save failed");
+            toast.error("Please enter a valid OpenAI API key.");
             return;
         }
         saveApiKey(input);
+        setStatus("API key saved successfully");
+        toast.success("API key saved successfully.");
         setStatus("API key saved");
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         deleteApiKey();
         setInput("");
         setStatus("API key deleted");
+        setShowKey(false);
+        setInput("");
+        setStatus("");
     };
 
     const handleTest = async () => {
         setTesting(true);
         try {
-            await testApiKey(input);
-            setStatus("API key is valid");
+            // test the API key
+            //create new test api to openai
+            const response = await testApiKey(input);
+            if (response.error) {
+                setStatus("API key test failed: " + response.error.message);
+            } else {
+                setStatus("API key is valid and working!");
+            }
         } catch {
             setStatus("API key test failed");
         }

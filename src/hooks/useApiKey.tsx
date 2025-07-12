@@ -80,13 +80,20 @@ export const useApiKey = () => {
   };
 
   const testApiKey = async (apiKey: string): Promise<boolean> => {
-    // Create Supabase Edge Function to test the API key
-    // For now, we'll just return true
-    toast({
-      title: "API Key Test",
-      description: "This will be implemented in a Supabase Edge Function",
+    if (!apiKey) {
+      throw new Error("API key is required for testing");
+    }
+    const response = await fetch("https://api.openai.com/v1/models", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+      },
     });
-    return true;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`API key test failed: ${errorData.error.message}`);
+    }
+    return true; // If the request was successful, the API key is valid
   };
 
   const apiKeyQuery = useQuery({

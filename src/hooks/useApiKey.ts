@@ -11,8 +11,10 @@ export function useApiKey() {
   }, []);
 
   const saveApiKey = useCallback((key: string) => {
+    // save to supabase
     localStorage.setItem("openai_api_key", key);
     setApiKeyState(key);
+    
   }, []);
 
   const deleteApiKey = useCallback(() => {
