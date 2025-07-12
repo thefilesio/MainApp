@@ -370,23 +370,17 @@ const DemoAgent = () => {
                                         <div>
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
-                                                width={bubbleSize * 0.5}
-                                                height={bubbleSize * 0.5}
-                                                viewBox="0 0 24 24"
-                                                fill={
-                                                    isDarkMode
-                                                        ? "#ffffff"
-                                                        : "#000000"
-                                                }
-                                                stroke="#001A72"
+                                               
+                                                fill="#ffffff"
+                                                height={bubbleSize * 0.5 + "px"}
+                                                viewBox="0 0 60 60"
+                                                width={bubbleSize * 0.5 + "px"}
+                                                version="1.1"
+                                                id="Capa_1"
+                                                
+                                               
                                             >
-                                                <path
-                                                    d="M20 4H4V16H7V21L12 16H20V4Z"
-                                                    stroke="#001A72"
-                                                    stroke-width="1.5"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                />
+                                                <path d="M55.232,43.104C58.354,38.746,60,33.705,60,28.5c0-14.888-13.458-27-30-27S0,13.612,0,28.5s13.458,27,30,27  c4.262,0,8.378-0.79,12.244-2.348c6.805,3.927,16.212,5.282,16.618,5.338c0.046,0.007,0.093,0.01,0.139,0.01  c0.375,0,0.725-0.211,0.895-0.554c0.192-0.385,0.116-0.849-0.188-1.153C57.407,54.493,55.823,49.64,55.232,43.104z" />
                                             </svg>
                                         </div>
                                     )}

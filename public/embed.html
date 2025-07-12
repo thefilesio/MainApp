@@ -22,14 +22,14 @@
         </div>
 
         <!-- Chatbot Widget -->
-        <script src="https://app.thefiles.io/widget.js"></script>
+        <script src="http://localhost:3000/widget.js"></script>
         <script>
             // get params id from url
             const botId = new URLSearchParams(window.location.search).get("widgetId") || "";
             document.addEventListener("DOMContentLoaded", function () {
                 window.AIChatWidget.init({
                     widgetId: botId,
-                    webUrl: "https://app.thefiles.io",
+                    webUrl: "http://localhost:3000",
                 });
             });
         </script>
