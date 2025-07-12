@@ -9,14 +9,17 @@
         webUrl = webUrl || "https://app.thefiles.io";
 
         try {
-            const response = await fetch(`${webUrl}/api/widget-client/${widgetId}`);
+            const response = await fetch(
+                `${webUrl}/api/widget-client/${widgetId}`
+            );
             if (!response.ok) throw new Error("Network response was not ok");
-            
+
             const conf = await response.json();
-            if (!conf || !conf.widget) throw new Error("No config found for widget ID: " + widgetId);
+            if (!conf || !conf.widget)
+                throw new Error("No config found for widget ID: " + widgetId);
 
             console.log("[AI Widget] Loaded config:", widgetId);
-            
+
             const config = {
                 color: conf.widget.color || "#4A90E2",
                 position: conf.widget.position || "bottom-right",
@@ -42,11 +45,11 @@
             const triggerContainer = document.createElement("div");
             triggerContainer.id = "chatbot-trigger-container";
             widgetContainer.appendChild(triggerContainer);
-            
+
             // --- 2. Create the main close button for the iframe ---
             const iframeCloseBtn = document.createElement("button");
             iframeCloseBtn.id = "chatbot-close-btn";
-            iframeCloseBtn.innerHTML = '&times;';
+            iframeCloseBtn.innerHTML = "&times;";
             iframeCloseBtn.onclick = closeChat;
             widgetContainer.appendChild(iframeCloseBtn);
 
@@ -56,7 +59,11 @@
             style.innerHTML = `
                 #chatbot-widget {
                     position: fixed;
-                    ${config.position === "bottom-left" ? "left: 1.5rem;" : "right: 1.5rem;"}
+                    ${
+                        config.position === "bottom-left"
+                            ? "left: 1.5rem;"
+                            : "right: 1.5rem;"
+                    }
                     bottom: 1.5rem;
                     z-index: 9999;
                 }
@@ -64,7 +71,11 @@
                 #chatbot-trigger-container {
                     display: flex; /* Diubah menjadi flex agar setTimeout bisa menampilkannya */
                     flex-direction: column;
-                    align-items: ${config.position === 'bottom-left' ? 'flex-start' : 'flex-end'};
+                    align-items: ${
+                        config.position === "bottom-left"
+                            ? "flex-start"
+                            : "flex-end"
+                    };
                     gap: 12px;
                 }
 
@@ -121,8 +132,10 @@
                 .chat-popup-bubble {
                     position: relative;
                     padding: 10px 36px 10px 16px;
-                    background: ${config.theme === 'dark' ? '#374151' : '#ffffff'};
-                    color: ${config.theme === 'dark' ? '#f3f4f6' : '#1f2937'};
+                    background: ${
+                        config.theme === "dark" ? "#374151" : "#ffffff"
+                    };
+                    color: ${config.theme === "dark" ? "#f3f4f6" : "#1f2937"};
                     border-radius: 12px;
                     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
                     font-family: sans-serif;
@@ -139,8 +152,14 @@
                     height: 0;
                     border-style: solid;
                     border-width: 8px 8px 0 8px;
-                    border-color: ${config.theme === 'dark' ? '#374151' : '#ffffff'} transparent transparent transparent;
-                    ${config.position === 'bottom-left' ? 'left: 20px;' : 'right: 20px;'}
+                    border-color: ${
+                        config.theme === "dark" ? "#374151" : "#ffffff"
+                    } transparent transparent transparent;
+                    ${
+                        config.position === "bottom-left"
+                            ? "left: 20px;"
+                            : "right: 20px;"
+                    }
                 }
 
                 .popup-close-btn {
@@ -158,7 +177,7 @@
                     font-weight: bold;
                 }
                 .popup-close-btn:hover {
-                    color: ${config.theme === 'dark' ? '#ffffff' : '#1f2937'};
+                    color: ${config.theme === "dark" ? "#ffffff" : "#1f2937"};
                 }
             `;
             document.head.appendChild(style);
@@ -170,16 +189,16 @@
                 popup.textContent = config.popupText;
 
                 const popupCloseBtn = document.createElement("button");
-                popupCloseBtn.className = 'popup-close-btn';
-                popupCloseBtn.innerHTML = '&times;';
+                popupCloseBtn.className = "popup-close-btn";
+                popupCloseBtn.innerHTML = "&times;";
                 popupCloseBtn.onclick = (e) => {
                     e.stopPropagation();
-                    popup.style.display = 'none';
+                    popup.style.display = "none";
                 };
-                
+
                 popup.appendChild(popupCloseBtn);
                 triggerContainer.appendChild(popup);
-                popup.addEventListener('click', openChat);
+                popup.addEventListener("click", openChat);
             }
 
             // --- 5. Create Bubble Button ---
@@ -195,35 +214,33 @@
                 bubble.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M20 4H4V16H7V21L12 16H20V4Z"/></svg>`;
             }
             triggerContainer.appendChild(bubble);
-            bubble.addEventListener('click', openChat);
+            bubble.addEventListener("click", openChat);
 
             // --- BARU: 6. Handle initial visibility and delay ---
-            triggerContainer.style.display = 'none'; // Sembunyikan container pemicu secara default
+            triggerContainer.style.display = "none"; // Sembunyikan container pemicu secara default
             console.log("popup_delay:", config.popup_delay);
             if (config.popup_delay > 0) {
-                // Jika ada delay, gunakan setTimeout untuk menampilkannya
+                // Jika ada delay, gunakan setTimeout untuk menampilkan popup
                 setTimeout(() => {
-                    triggerContainer.style.display = 'flex';
-                }, config.popup_delay ); // Konversi detik ke milidetik
+                    popup.style.display = "block";
+                }, config.popup_delay * 1000); // Penting: dikali 1000 untuk konversi ke milidetik
             } else {
-                // Jika tidak ada delay, langsung tampilkan
-                triggerContainer.style.display = 'flex';
+                // Jika tidak ada delay, langsung tampilkan popup
+                popup.style.display = "block";
             }
-
 
             // --- 7. Simplified open/close logic ---
             function openChat() {
-                triggerContainer.style.display = 'none';
-                iframe.style.display = 'block';
-                iframeCloseBtn.style.display = 'flex';
+                triggerContainer.style.display = "none";
+                iframe.style.display = "block";
+                iframeCloseBtn.style.display = "flex";
             }
 
             function closeChat() {
-                iframe.style.display = 'none';
-                iframeCloseBtn.style.display = 'none';
-                triggerContainer.style.display = 'flex';
+                iframe.style.display = "none";
+                iframeCloseBtn.style.display = "none";
+                triggerContainer.style.display = "flex";
             }
-
         } catch (error) {
             console.error("[AI Widget] Error loading widget:", error);
         }
@@ -231,8 +248,8 @@
 
     window.AIChatWidget = {
         init: ({ widgetId, webUrl }) => {
-            if (document.getElementById('chatbot-widget')) {
-                console.warn('[AI Widget] Widget already initialized.');
+            if (document.getElementById("chatbot-widget")) {
+                console.warn("[AI Widget] Widget already initialized.");
                 return;
             }
             if (!widgetId) {
@@ -240,9 +257,11 @@
                 return;
             }
             console.log(`[AI Widget] Initializing widget with ID: ${widgetId}`);
-            
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => loadWidget(widgetId, webUrl));
+
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", () =>
+                    loadWidget(widgetId, webUrl)
+                );
             } else {
                 loadWidget(widgetId, webUrl);
             }
