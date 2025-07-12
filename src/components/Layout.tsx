@@ -45,7 +45,10 @@ export default function Layout({ children }: LayoutProps) {
         // if route has a "live" segment, don't show the sidebar
         if (
             router.pathname.includes("live") ||
-            router.pathname.includes("widget")
+            router.pathname.includes("widget") || 
+            router.pathname.includes("reset-password")
+            || router.pathname.includes("auth") || router.pathname.includes("confirm-user")
+            || router.pathname.includes("update-password")
         ) {
             setSidebarOpen(false);
         } else {

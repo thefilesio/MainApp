@@ -105,6 +105,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
+    const updatePassword = async (newPassword: string) => {
+        try {
+            setLoading(true);
+            const { error } = await supabase.auth.updateUser({
+                password: newPassword,
+            });
+            if (error) throw error;
+            toast.success("Password updated successfully!");
+        } catch (error: any) {
+            toast.error("Failed to update password. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const signUp = async (email: string, password: string) => {
         try {
             setLoading(true);
