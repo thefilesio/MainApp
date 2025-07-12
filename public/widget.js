@@ -205,7 +205,7 @@
                     // Jika ada delay, gunakan setTimeout untuk menampilkan popup
                     setTimeout(() => {
                         popup.style.display = "block";
-                    }, config.popup_delay * 1000); // Penting: dikali 1000 untuk konversi ke milidetik
+                    }, config.popup_delay ); // Penting: dikali 1000 untuk konversi ke milidetik
                 } else {
                     // Jika tidak ada delay, langsung tampilkan popup
                     popup.style.display = "block";
