@@ -16,6 +16,7 @@ interface Message {
 interface ChatInterfaceProps {
     botName?: string;
     title?: string; // Optional prop for title
+    widgetId?: string; // Optional prop for widget ID
     className?: string;
     botId?: string;
     chooseColor?: string; // Optional prop for custom color
@@ -39,6 +40,7 @@ const ChatInterfaceUser = ({
     urlProfile,
     setMessages,
     logoIconURL,
+    widgetId,
     isDarkMode = false, // Default to false if not provided
     messages = [
         {
@@ -55,8 +57,8 @@ const ChatInterfaceUser = ({
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
     const bottomRef = useRef<HTMLDivElement | null>(null);
-    const [close, setClose] = useState(false);
 
+    const [isLimitReached, setIsLimitReached] = useState(false);
     const [botColor, setBotColor] = useState("#4f46e5");
 
     useEffect(() => {
@@ -68,7 +70,7 @@ const ChatInterfaceUser = ({
                 const r = parseInt(deepColor.slice(0, 2), 16);
                 const g = parseInt(deepColor.slice(2, 4), 16);
                 const b = parseInt(deepColor.slice(4, 6), 16);
-                // Convert to a darker shade
+                // Convert to a d arker shade
                 const darkColor = `#${Math.max(r - 110, 0)
                     .toString(16)
                     .padStart(2, "0")}${Math.max(g - 110, 0)
@@ -141,7 +143,7 @@ const ChatInterfaceUser = ({
                             { role: "user", content: input },
                         ],
                         botId: botId || "default-bot-id", // Use a default bot ID if none is provided
-                        widgetId: "default-widget-id", // Use a default widget ID if none is provided
+                        widgetId: widgetId || "", // Use a default widget ID if none is provided
                     }),
                 });
             } catch (error) {
@@ -151,6 +153,15 @@ const ChatInterfaceUser = ({
             if (res && res.ok) {
                 try {
                     data = await res.json();
+                } catch (error) {
+                    console.error("Error parsing JSON:", error);
+                }
+            } else if (res && !res.ok) {
+                try {
+                    data = await res.json();
+                    data.message = {
+                        content: data.error || "Error from server.",
+                    };
                 } catch (error) {
                     console.error("Error parsing JSON:", error);
                 }
@@ -184,8 +195,7 @@ const ChatInterfaceUser = ({
     return (
         <div
             className={
-                "flex flex-col h-[600px]  border  overflow-hidden " +
-                className
+                "flex flex-col h-[600px]  border  overflow-hidden " + className
             }
             style={{ borderRadius: "10px" }}
         >
@@ -282,7 +292,7 @@ const ChatInterfaceUser = ({
                             className="max-w-[40%] px-4 py-3 rounded-xl  dark:text-secondary-foreground
                             text-white "
                             style={{
-                                backgroundColor:  botColor,
+                                backgroundColor: botColor,
                             }}
                         >
                             <div
@@ -329,13 +339,22 @@ const ChatInterfaceUser = ({
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Type your message..."
-                         className={`min-h-12 resize-none ${
-                            isDarkMode ? "bg-gray-800 text-white" : "bg-white text-black"
+                        className={`min-h-12 resize-none ${
+                            isDarkMode
+                                ? "bg-gray-800 text-white"
+                                : "bg-white text-black"
                         }`}
                         style={
-                            
-                            isDarkMode ? { backgroundColor: "#1f2937", color: "#f3f4f6" } : { backgroundColor: "#ffffff", color: "#000000" }
-                         }
+                            isDarkMode
+                                ? {
+                                      backgroundColor: "#1f2937",
+                                      color: "#f3f4f6",
+                                  }
+                                : {
+                                      backgroundColor: "#ffffff",
+                                      color: "#000000",
+                                  }
+                        }
                         disabled={loading}
                         onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {

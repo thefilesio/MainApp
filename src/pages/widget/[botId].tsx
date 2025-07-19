@@ -146,6 +146,7 @@ const Widget = () => {
                         className={`w-full h-full`}
                         rules={promptText}
                         isDarkMode={isDarkMode}
+                        widgetId={widgetId?.toString() || ""}
                     />
                 ) : (
                     <div className="flex items-center justify-center w-full h-full">

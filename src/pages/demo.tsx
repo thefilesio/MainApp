@@ -1,8 +1,8 @@
 import withAuth from "@/hooks/use-auth";
-import DemoAgent from "@/pages/shared/DemoAgent";
+import DemoPage from "./shared/DemoPage";
 
  function DemoAgentPage() {
-  return <DemoAgent />;
+  return <DemoPage />;
 }
 
 export default withAuth(DemoAgentPage);

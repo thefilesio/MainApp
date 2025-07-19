@@ -20,7 +20,7 @@ export async function OPTIONS() {
 // POST für Chat
 export async function POST(req: Request) {
     try {
-        const { botId, messages } = await req.json();
+        const { botId, messages,widgetId } = await req.json();
 
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,7 +34,52 @@ export async function POST(req: Request) {
                 },
             });
         }
-        console.log("Bot ID:", botId);
+        
+        // get widget data with widgetId
+        const { data: widget, error: widgetError } = await supabase
+            .from("widgets")
+            .select("*")
+            .eq("id", widgetId)
+            .single();
+
+            if (widgetError || !widget) {
+            return new Response(JSON.stringify({ error: "Widget not found" }), {
+                status: 404,
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                },
+            });
+        }
+        if(widget.limit_chat != -1 && widget.limit_chat <= 0) {
+            return new Response(JSON.stringify({ error: "Chat limit reached, Please contact the seller." }), {
+                status: 403,
+                
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                },
+            });
+        }
+
+        if (widget.is_demo) {
+           // reduce limit_chat by 1
+            const { data: updatedWidget, error: updateError } = await supabase
+                .from("widgets")
+                .update({ limit_chat: widget.limit_chat - 1 })
+                .eq("id", widgetId)
+                .select("*")
+                .single();  
+
+            if (updateError || !updatedWidget) {
+                return new Response(JSON.stringify({ error: "Failed to update widget" }), {
+                    status: 500,
+                    headers: {
+                        "Access-Control-Allow-Origin": "*",
+                    },
+                });
+            }
+        }
+
+
         const { data: bot, error: botError } = await supabase
             .from("bots")
             .select("*")
@@ -47,6 +92,7 @@ export async function POST(req: Request) {
                 headers: {
                     "Access-Control-Allow-Origin": "*",
                 },
+                
             });
         }
 
