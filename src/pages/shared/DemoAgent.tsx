@@ -435,6 +435,7 @@ const DemoAgent = () => {
                                                 setMessages={setMessages}
                                                 className="w-full h-full"
                                                 rules={promptText}
+                                                isDarkMode={isDarkMode}
                                             />
                                         </motion.div>
                                     )}

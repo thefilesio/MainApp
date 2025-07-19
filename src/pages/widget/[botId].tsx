@@ -125,6 +125,7 @@ const Widget = () => {
                     height: "100vh",
                     background: isDarkMode ? "#1a1a1a" : "#ffffff",
                     color: "#ffffff",
+                    borderRadius: "16px",
                     
                 }}
             >
@@ -144,6 +145,7 @@ const Widget = () => {
                         logoIconURL={logoIconURL?.toString() || ""}
                         className={`w-full h-full`}
                         rules={promptText}
+                        isDarkMode={isDarkMode}
                     />
                 ) : (
                     <div className="flex items-center justify-center w-full h-full">

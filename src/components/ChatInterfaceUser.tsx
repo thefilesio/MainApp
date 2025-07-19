@@ -26,6 +26,7 @@ interface ChatInterfaceProps {
     setMessages?: any; // Function to set messages, can be any type
     messages?: Message[]; // Initial messages to display
     logoIconURL?: string; // URL for the bot's logo icon
+    isDarkMode?: boolean; // Optional prop to determine if dark mode is enabled
 }
 
 const ChatInterfaceUser = ({
@@ -38,6 +39,7 @@ const ChatInterfaceUser = ({
     urlProfile,
     setMessages,
     logoIconURL,
+    isDarkMode = false, // Default to false if not provided
     messages = [
         {
             id: "welcome-message",
@@ -54,6 +56,35 @@ const ChatInterfaceUser = ({
     const [loading, setLoading] = useState(false);
     const bottomRef = useRef<HTMLDivElement | null>(null);
     const [close, setClose] = useState(false);
+
+    const [botColor, setBotColor] = useState("#4f46e5");
+
+    useEffect(() => {
+        // change bot background color if chooseColor is provided
+        if (chooseColor) {
+            // make dark color from chooseColor
+            const deepColor = chooseColor.replace(/^#/, "");
+            if (deepColor.length === 6) {
+                const r = parseInt(deepColor.slice(0, 2), 16);
+                const g = parseInt(deepColor.slice(2, 4), 16);
+                const b = parseInt(deepColor.slice(4, 6), 16);
+                // Convert to a darker shade
+                const darkColor = `#${Math.max(r - 110, 0)
+                    .toString(16)
+                    .padStart(2, "0")}${Math.max(g - 110, 0)
+                    .toString(16)
+                    .padStart(2, "0")}${Math.max(b - 110, 0)
+                    .toString(16)
+                    .padStart(2, "0")}`;
+                setBotColor(darkColor);
+            } else {
+                console.warn(
+                    "Invalid color format. Expected hex format like #RRGGBB."
+                );
+                setBotColor("#4f46e5"); // Fallback to default color
+            }
+        }
+    }, [chooseColor]);
 
     useEffect(() => {
         // Scroll ke elemen paling bawah saat render/mount
@@ -153,10 +184,9 @@ const ChatInterfaceUser = ({
     return (
         <div
             className={
-                "flex flex-col h-[600px]  border  overflow-hidden bg-background " +
+                "flex flex-col h-[600px]  border  overflow-hidden " +
                 className
             }
-
             style={{ borderRadius: "10px" }}
         >
             <style jsx>{`
@@ -191,7 +221,6 @@ const ChatInterfaceUser = ({
                                     ? "justify-end"
                                     : "justify-start"
                             }
-                            dark:text-secondary-foreground
                             text-white
                             
 
@@ -202,8 +231,15 @@ const ChatInterfaceUser = ({
                                 className={`max-w-[80%] px-4 py-3 rounded-xl ${
                                     message.sender === "user"
                                         ? `mainColor text-accent-foreground`
-                                        : "bg-gray-700 text-secondary-foreground"
+                                        : `text-secondary-foreground ${
+                                              isDarkMode ? "bg-gray-700" : ""
+                                          }  ${isDarkMode ? "dark" : ""}`
                                 }`}
+                                style={
+                                    message.sender != "user"
+                                        ? { backgroundColor: botColor }
+                                        : {}
+                                }
                             >
                                 {message.sender === "bot" && (
                                     <div className="flex items-center space-x-2 mb-1">
@@ -243,8 +279,11 @@ const ChatInterfaceUser = ({
                     ))}
                     {loading && (
                         <div
-                            className="bg-gray-700 max-w-[40%] px-4 py-3 rounded-xl  dark:text-secondary-foreground
+                            className="max-w-[40%] px-4 py-3 rounded-xl  dark:text-secondary-foreground
                             text-white "
+                            style={{
+                                backgroundColor:  botColor,
+                            }}
                         >
                             <div
                                 className="flex items-center space-x-2 mb-1"
@@ -269,7 +308,7 @@ const ChatInterfaceUser = ({
                             </div>
                             <p className="bg-muted px-4 py-3 rounded-xl max-w-[80%]">
                                 <span className="animate-pulse text-muted-foreground">
-                                    Typing...   
+                                    Typing...
                                 </span>
                             </p>
                         </div>
@@ -281,7 +320,7 @@ const ChatInterfaceUser = ({
             <div className="p-4 border-t">
                 <form
                     onSubmit={(e) => {
-                        e.preventDefault(); 
+                        e.preventDefault();
                         handleSendMessage();
                     }}
                     className="flex items-center space-x-2"
@@ -290,7 +329,13 @@ const ChatInterfaceUser = ({
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Type your message..."
-                        className="min-h-12 resize-none bg-white dark:bg-main-dark text-black dark:text-white"
+                         className={`min-h-12 resize-none ${
+                            isDarkMode ? "bg-gray-800 text-white" : "bg-white text-black"
+                        }`}
+                        style={
+                            
+                            isDarkMode ? { backgroundColor: "#1f2937", color: "#f3f4f6" } : { backgroundColor: "#ffffff", color: "#000000" }
+                         }
                         disabled={loading}
                         onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {

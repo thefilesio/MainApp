@@ -28,6 +28,7 @@ interface ChatInterfaceProps {
     messages?: Message[]; // Initial messages to display
     title?: string; // Title for the chat interface
     logoIconURL?: string; // URL for the button icon
+    isDarkMode?: boolean; // Optional prop for dark mode
 }
 
 const ChatInterface = ({
@@ -41,6 +42,7 @@ const ChatInterface = ({
     title = "Chat Interface",
     setMessages,
     logoIconURL,
+    isDarkMode,
     messages = [
         {
             id: "welcome-message",
@@ -58,6 +60,26 @@ const ChatInterface = ({
     const [loading, setLoading] = useState(false);
     const bottomRef = useRef<HTMLDivElement | null>(null);
     const [close, setClose] = useState(false);
+    const [botColor, setBotColor] = useState("#4f46e5");
+
+    useEffect(() => {
+       // change bot background color if chooseColor is provided
+        if (chooseColor) {
+            // make dark color from chooseColor
+            const deepColor = chooseColor.replace(/^#/, "");
+            if (deepColor.length === 6) {
+                const r = parseInt(deepColor.slice(0, 2), 16);
+                const g = parseInt(deepColor.slice(2, 4), 16);
+                const b = parseInt(deepColor.slice(4, 6), 16);
+                // Convert to a darker shade
+                const darkColor = `#${Math.max(r - 110, 0).toString(16).padStart(2, '0')}${Math.max(g - 110, 0).toString(16).padStart(2, '0')}${Math.max(b - 110, 0).toString(16).padStart(2, '0')}`;
+                setBotColor(darkColor);
+            } else {
+                console.warn("Invalid color format. Expected hex format like #RRGGBB.");
+                setBotColor("#4f46e5"); // Fallback to default color    
+            }
+        }
+    }, [chooseColor]);
     useEffect(() => {
         // Scroll ke elemen paling bawah saat render/mount
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -65,6 +87,8 @@ const ChatInterface = ({
 
     useEffect(() => {
         // Scroll ke elemen paling bawah saat ada perubahan pada messages
+
+        
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [openingMessage]);
 
@@ -214,7 +238,7 @@ const ChatInterface = ({
                 </div>
             </div>
 
-            <ScrollArea className="flex-1 p-4">
+            <ScrollArea className="flex-1 p-4 ">
                 <div className="space-y-4 ">
                     {messages.map((message) => (
                         <div
@@ -235,8 +259,14 @@ const ChatInterface = ({
                                 className={`max-w-[80%] px-4 py-3 rounded-xl ${
                                     message.sender === "user"
                                         ? `mainColor text-accent-foreground`
-                                        : "bg-gray-700 text-secondary-foreground"
+                                        : `text-secondary-foreground ${isDarkMode ? "bg-gray-700" :""}  ${isDarkMode ? "dark" : ""}`
                                 }`}
+
+                                style={
+                                    message.sender != "user"
+                                        ? { backgroundColor: botColor }
+                                        : {}
+                                }
                             >
                                 {message.sender === "bot" && (
                                     <div className="flex items-center space-x-2 mb-1">
@@ -276,8 +306,10 @@ const ChatInterface = ({
                     ))}
                     {loading && (
                         <div
-                            className="bg-gray-700 max-w-[40%] px-4 py-3 rounded-xl  dark:text-secondary-foreground
+                            className="dark:bg-gray-700 max-w-[40%] px-4 py-3 rounded-xl  dark:text-secondary-foreground
                             text-white "
+
+                            style={{ backgroundColor:  botColor }}
                         >
                             <div
                                 className="flex items-center space-x-2 mb-1"
@@ -296,11 +328,11 @@ const ChatInterface = ({
                                         </div>
                                     )}
                                 </Avatar>
-                                <span className="text-xs font-medium">
+                                <span className="text-xs font-medium text-white">
                                     {botName}
                                 </span>
                             </div>
-                            <p className="bg-muted px-4 py-3 rounded-xl max-w-[80%]">
+                            <p className="bg-muted px-4 py-3 rounded-xl max-w-[80%] text-white">
                                 <span className="animate-pulse text-muted-foreground">
                                     Typing...
                                 </span>
@@ -323,7 +355,13 @@ const ChatInterface = ({
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Type your message..."
-                        className="min-h-12 resize-none bg-card dark:text-white text-black "
+                        className={`min-h-12 resize-none ${
+                            isDarkMode ? "bg-gray-800 text-white" : "bg-white text-black"
+                        }`}
+                        style={
+                            
+                            isDarkMode ? { backgroundColor: "#1f2937", color: "#f3f4f6" } : { backgroundColor: "#ffffff", color: "#000000" }
+                         }
                         disabled={loading}
                         onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {

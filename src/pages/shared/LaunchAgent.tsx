@@ -1207,6 +1207,7 @@ const LaunchAgent = () => {
                                                 logoIconURL={logoUrl}
                                                 className="w-full h-full"
                                                 rules={promptText}
+                                                isDarkMode={ previewTheme === "dark" }
                                             />
                                         </motion.div>
                                     )}
