@@ -164,7 +164,6 @@ const DemoPage = () => {
     const fg = previewTheme == "dark" ? "#ffffff" : "#000000";
 
     const storeConnection = async () => {
-       
         setLoading(true);
         if (!user) {
             toast.error("You must be logged in to create a widget.");
@@ -211,7 +210,6 @@ const DemoPage = () => {
     };
 
     const updateConnection = async () => {
-        
         setLoading(true);
         if (!user) {
             toast.error("You must be logged in to create a widget.");
@@ -515,7 +513,12 @@ const DemoPage = () => {
                         {connections.map((conn, idx) => (
                             <div
                                 key={conn.id}
-                                className="flex items-center cursor-pointer justify-between bg-card p-4 rounded shadow dark:bg-main-dark border dark:border-[#22304a] "
+                                className={`flex items-center cursor-pointer justify-between bg-card p-4 rounded shadow dark:bg-main-dark border 
+                                    ${
+                                        conn.limitChat == 0
+                                            ? "border-red-500"
+                                            : "border-gray-200 dark:border-gray-700"
+                                    }`}
                             >
                                 <div
                                     onClick={() => {
@@ -529,6 +532,9 @@ const DemoPage = () => {
                                     <div className="text-xs text-muted-foreground">
                                         {conn.integrationType} •{" "}
                                         {conn.buildName}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                        Limit: {conn.limitChat} chats
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
